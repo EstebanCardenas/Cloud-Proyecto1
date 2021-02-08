@@ -35,10 +35,11 @@ class ConcursoSchema(ma.Schema):
 concursoSchema = ConcursoSchema()
 concursosSchema = ConcursoSchema(many=1)
 
+#Voz
 class Voz(db.Model):
     id = db.Column(db.Integer, primary_key=1)
     f_creacion = db.Column(db.DateTime, nullable=0)
-    email = db.Column(db.String(120), unique=1, nullable=0)
+    email = db.Column(db.String(120), nullable=0)
     nombres = db.Column(db.String(220), nullable=0)
     apellidos = db.Column(db.String(220), nullable=0)
     convertida = db.Column(db.Boolean, nullable=0) #estado de la voz
@@ -47,3 +48,8 @@ class Voz(db.Model):
     #TODO archivo_convertida
     #relaciones
     concurso_id = db.Column(db.Integer, db.ForeignKey('Concurso.id'), nullable=0)
+class VozSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "f_creacion", "email", "nombres", "apellidos", "convertida", "observaciones", "concurso_id")
+vozSchema = VozSchema()
+vocesSchema = VozSchema(many=1)
