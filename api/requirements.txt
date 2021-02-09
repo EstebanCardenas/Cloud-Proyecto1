@@ -1,0 +1,10 @@
+##dependencias
+#app
+flask
+flask-cors
+flask-sqlalchemy
+flask-marshmallow
+
+#tasks
+celery
+redis
