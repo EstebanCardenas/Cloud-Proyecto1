@@ -4,6 +4,7 @@ flask
 flask-cors
 flask-sqlalchemy
 flask-marshmallow
+flask-praetorian
 
 #tasks
 celery
