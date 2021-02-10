@@ -1,4 +1,8 @@
-from app import db, ma
+from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
+
+db = SQLAlchemy()
+ma = Marshmallow()
 
 #Usuario admin
 class UserAdmin(db.Model):
@@ -9,11 +13,39 @@ class UserAdmin(db.Model):
     contrasena = db.Column(db.String(120), nullable=0)
     #relaciones
     concursos = db.relationship('Concurso', backref='UserAdmin', lazy=1)
+
+    @property
+    def rolenames(self):
+        return []
+
+    @property
+    def password(self):
+        return self.constrasena
+
+    @classmethod
+    def lookup(cls, email):
+        return cls.query.filter_by(email=email).one_or_none()
+
+    @classmethod
+    def identify(cls, id):
+        return cls.query.get(id)
+
+    @property
+    def identity(self):
+        return self.id
+
+    def is_valid(self):
+        return True
+
+
 class UserAdminSchema(ma.Schema):
     class Meta:
         fields = ("id", "nombres", "apellidos", "email")
+
+
 userAdminSchema = UserAdminSchema()
 usersAdminSchema = UserAdminSchema(many=1)
+
 
 #Concurso
 class Concurso(db.Model):
@@ -29,11 +61,16 @@ class Concurso(db.Model):
     #relaciones
     user_id = db.Column(db.Integer, db.ForeignKey('UserAdmin.id'), nullable=0)
     voces = db.relationship('Voz', backref='Concurso', lazy=1)
+
+
 class ConcursoSchema(ma.Schema):
     class Meta:
         fields = ("id", "nombre", "f_inicio", "f_fin", "valor_paga", "guion", "recomendaciones", "user_id")
+
+
 concursoSchema = ConcursoSchema()
 concursosSchema = ConcursoSchema(many=1)
+
 
 #Voz
 class Voz(db.Model):
@@ -48,6 +85,8 @@ class Voz(db.Model):
     #TODO archivo_convertida
     #relaciones
     concurso_id = db.Column(db.Integer, db.ForeignKey('Concurso.id'), nullable=0)
+
+
 class VozSchema(ma.Schema):
     class Meta:
         fields = ("id", "f_creacion", "email", "nombres", "apellidos", "convertida", "observaciones", "concurso_id")
