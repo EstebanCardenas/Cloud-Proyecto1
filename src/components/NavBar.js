@@ -68,9 +68,13 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-function Buttons(logged, classes) {
+function Buttons(logged, classes, setLogged) {
     const [openLogin, setOpenLogin] = useState(false)
     const [openRegister, setOpenRegister] = useState(false)
+
+    function salir() {
+        setLogged(false)
+    }
 
     if (!logged) {
         return (
@@ -121,7 +125,7 @@ function Buttons(logged, classes) {
         )
     } else {
         return (
-            <Button href="#" color="primary" variant="outlined" className={classes.link}>
+            <Button color="primary" variant="outlined" className={classes.link} onClick={() => salir()}>
                 Salir
             </Button>
         )
@@ -150,7 +154,7 @@ export default function NavBar(props) {
                 <nav>
                     {props.logged ? renderConcursos(classes) : ""}
                 </nav>
-                {Buttons(props.logged, classes)}
+                {Buttons(props.logged, classes, props.setLogged)}
                 </Toolbar>
             </AppBar>
         </React.Fragment>
