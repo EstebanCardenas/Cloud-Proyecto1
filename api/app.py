@@ -43,8 +43,8 @@ def register():
     if not email or not password or not nombres or not apellidos:
         return jsonify({"msg": "Formulario incompleto"}), 400
     #TODO chequear email regex
-    if db.session.query(User).filter_by(email=email).count() < 1:
-        db.session.add(User(
+    if db.session.query(UserAdmin).filter_by(email=email).count() < 1:
+        db.session.add(UserAdmin(
             email=email,
             contrasena=guard.hash_password(password),
             nombres=nombres,
