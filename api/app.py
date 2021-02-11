@@ -24,7 +24,7 @@ def hello_world():
     return 'Hello World!'
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
     req = request.get_json()
     email = req.get('email', None)
@@ -33,7 +33,7 @@ def login():
     return jsonify({'access_token': guard.encode_jwt_token(user)}), 200
 
 
-@app.route('/register', methods=['POST'])
+@app.route('/api/register', methods=['POST'])
 def register():
     req = request.get_json()
     email = req.get('email', None)
@@ -57,7 +57,7 @@ def register():
         return {"msg": "el email ya está usado"}, 400
 
 
-@app.route('/concurso', methods=['GET','POST'])
+@app.route('/api/concurso', methods=['GET','POST'])
 @auth_required
 def concursos():
     user = current_user()
@@ -89,7 +89,7 @@ def concursos():
         return concursoSchema.dump(concurso),201
 
 
-@app.route('/concurso/<int:concurso_id>', methods=['GET','PUT','DELETE'])
+@app.route('/api/concurso/<int:concurso_id>', methods=['GET','PUT','DELETE'])
 @auth_required
 def concurso(concurso_id):
     user = current_user()
