@@ -37,6 +37,8 @@ export default function Login(props) {
     
     function login(evt) {
         evt.preventDefault()
+        console.log(mail)
+        console.log(pass)
     }
 
     return (

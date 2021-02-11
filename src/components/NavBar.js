@@ -10,6 +10,7 @@ import Modal from '@material-ui/core/Modal';
 import Fade from '@material-ui/core/Fade';
 import Backdrop from '@material-ui/core/Backdrop';
 import Login from './Login';
+import Register from './Register';
 
 const useStyles = makeStyles((theme) => ({
     '@global': {
@@ -112,8 +113,7 @@ function Buttons(logged, classes) {
             >
                 <Fade in={openRegister}>
                     <div className={classes.paper}>
-                        <h2 id="transition-modal-title">REGISTER</h2>
-                        <p id="transition-modal-description">react-transition-group animates me.</p>
+                        <Register />
                     </div>
                 </Fade>
             </Modal>

@@ -27,3 +27,110 @@ const useStyles = makeStyles((theme) => ({
       margin: theme.spacing(3, 0, 2),
     },
 }))
+
+export default function Register() {
+    const classes = useStyles()
+
+    const [nombres, setNombres] = useState("")
+    const [apellidos, setApellidos] = useState("")
+    const [mail, setMail] = useState("")
+    const [pass, setPass] = useState("")
+    const [passConfirm, setPassConfirm] = useState("")
+
+    function register(evt) {
+        evt.preventDefault()
+        console.log(nombres)
+        console.log(apellidos)
+        console.log(mail)
+        console.log(pass)
+        console.log(passConfirm)
+        if (pass !== passConfirm) {
+            alert("Las contraseñas no coinciden")
+            return
+        }
+    }
+
+    return (
+        <Container component="main" maxWidth="xs">
+            <CssBaseline />
+            <div className={classes.paper}>
+                <Avatar className={classes.avatar}>
+                    <LockOutlinedIcon />
+                </Avatar>
+                <Typography component="h1" variant="h5">
+                    Registro
+                </Typography>
+                <form className={classes.form} onSubmit={register}>
+                <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    name="nombres"
+                    id="nombres"
+                    label="Nombres"
+                    value={nombres}
+                    onChange={evt => setNombres(evt.target.value)}
+                />
+                <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    name="apellidos"
+                    id="apellidos"
+                    label="Apellidos"
+                    value={apellidos}
+                    onChange={evt => setApellidos(evt.target.value)}
+                />
+                <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    name="mail"
+                    id="mail"
+                    label="Correo"
+                    value={mail}
+                    onChange={evt => setMail(evt.target.value)}
+                />
+                <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    name="password"
+                    type="password"
+                    id="password"
+                    label="Contraseña"
+                    autoComplete="current-password"
+                    value={pass}
+                    onChange={evt => setPass(evt.target.value)}
+                />
+                <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    name="confirm"
+                    type="password"
+                    id="confirm"
+                    label="Confirmar Contraseña"
+                    autoComplete="current-password"
+                    value={passConfirm}
+                    onChange={evt => setPassConfirm(evt.target.value)}
+                />
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    className={classes.submit}
+                >
+                    Registrarse
+                </Button>
+                </form>
+            </div>
+        </Container>
+    )
+}
