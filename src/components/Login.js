@@ -37,8 +37,26 @@ export default function Login(props) {
     
     function login(evt) {
         evt.preventDefault()
-        console.log(mail)
-        console.log(pass)
+        fetch('/api/login', {
+        method: 'POST',
+        body: JSON.stringify({
+            email: mail,
+            password: pass
+        })
+        })
+        .then(resp => resp.json())
+        .then(json => {
+            console.log(json)
+            localStorage.setItem("mail", mail)
+            localStorage.setItem("access_token", json["access_token"])
+            props.setLogged(true)
+            alert("Login exitoso!")
+            props.setOpen(false)
+        })
+        .catch(err => {
+            console.log(err)
+            alert(`Login fallido: ${err}`)
+        })
     }
 
     return (

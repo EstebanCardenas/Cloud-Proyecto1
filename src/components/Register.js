@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 
-export default function Register() {
+export default function Register(props) {
     const classes = useStyles()
 
     const [nombres, setNombres] = useState("")
@@ -39,15 +39,34 @@ export default function Register() {
 
     function register(evt) {
         evt.preventDefault()
-        console.log(nombres)
-        console.log(apellidos)
-        console.log(mail)
-        console.log(pass)
-        console.log(passConfirm)
+        //validación
+        if (!mail.includes('@')) {
+            alert("Introduzca un correo válido")
+            return
+        }
         if (pass !== passConfirm) {
             alert("Las contraseñas no coinciden")
             return
         }
+        //fetch
+        fetch('/api/register', {
+            method: "POST",
+            body: JSON.stringify({
+              email: mail,
+              password: pass,
+              nombres: nombres,
+              apellidos: apellidos,
+            })
+        })
+        .then(resp => resp.json())
+        .then(json => {
+            alert("Registro exitoso!")
+            props.setOpen(false)
+        })
+        .catch(err => {
+            console.log(err)
+            alert(`Registro fallido: ${err}`)
+        })
     }
 
     return (

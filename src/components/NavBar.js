@@ -96,7 +96,10 @@ function Buttons(logged, classes, setLogged) {
             >
                 <Fade in={openLogin}>
                     <div className={classes.paper}>
-                        <Login />
+                        <Login 
+                            setLogged = {setLogged}
+                            setOpen = {setOpenLogin}
+                        />
                     </div>
                 </Fade>
             </Modal>
@@ -117,7 +120,9 @@ function Buttons(logged, classes, setLogged) {
             >
                 <Fade in={openRegister}>
                     <div className={classes.paper}>
-                        <Register />
+                        <Register 
+                            setOpen = {setOpenRegister}
+                        />
                     </div>
                 </Fade>
             </Modal>
@@ -149,7 +154,7 @@ export default function NavBar(props) {
             <AppBar position="static" color="default" elevation={0} className={classes.appBar}>
                 <Toolbar className={classes.toolbar}>
                 <Typography variant="h6" color="inherit" noWrap className={classes.toolbarTitle}>
-                    SuperVoices
+                    Super Voices
                 </Typography>
                 <nav>
                     {props.logged ? renderConcursos(classes) : ""}
