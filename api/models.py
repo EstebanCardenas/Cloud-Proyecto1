@@ -12,7 +12,7 @@ class UserAdmin(db.Model):
     email = db.Column(db.String(120), nullable=0, unique=1)
     contrasena = db.Column(db.String(120), nullable=0)
     #relaciones
-    concursos = db.relationship('Concurso', backref='UserAdmin', lazy=1)
+    concursos = db.relationship('Concurso', backref='user_admin', lazy=1)
 
     @property
     def rolenames(self):
@@ -20,7 +20,7 @@ class UserAdmin(db.Model):
 
     @property
     def password(self):
-        return self.constrasena
+        return self.contrasena
 
     @classmethod
     def lookup(cls, email):
@@ -51,21 +51,21 @@ usersAdminSchema = UserAdminSchema(many=1)
 class Concurso(db.Model):
     id = db.Column(db.Integer, primary_key=1)
     nombre = db.Column(db.String(120), nullable=0)
-    #TODO banner o imagen
-    #TODO url única
+    imagen_base64 = db.Column(db.Text, nullable=1)
+    url = db.Column(db.String(120), nullable=0, unique=1)
     f_inicio = db.Column(db.DateTime, nullable=0)
     f_fin = db.Column(db.DateTime, nullable=0)
     valor_paga = db.Column(db.Integer, nullable=0)
     guion = db.Column(db.String(2000), nullable=0)
     recomendaciones = db.Column(db.String(2000), nullable=0)
     #relaciones
-    user_id = db.Column(db.Integer, db.ForeignKey('UserAdmin.id'), nullable=0)
-    voces = db.relationship('Voz', backref='Concurso', lazy=1)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_admin.id'), nullable=0)
+    voces = db.relationship('Voz', backref='concurso', lazy=1)
 
 
 class ConcursoSchema(ma.Schema):
     class Meta:
-        fields = ("id", "nombre", "f_inicio", "f_fin", "valor_paga", "guion", "recomendaciones", "user_id")
+        fields = ("id", "nombre", "f_inicio", "f_fin", "url", "imagen_base64", "valor_paga", "guion", "recomendaciones", "user_id")
 
 
 concursoSchema = ConcursoSchema()
@@ -79,16 +79,32 @@ class Voz(db.Model):
     email = db.Column(db.String(120), nullable=0)
     nombres = db.Column(db.String(220), nullable=0)
     apellidos = db.Column(db.String(220), nullable=0)
-    convertida = db.Column(db.Boolean, nullable=0) #estado de la voz
     observaciones = db.Column(db.String(1000))
-    #TODO archivo_original
-    #TODO archivo_convertida
-    #relaciones
-    concurso_id = db.Column(db.Integer, db.ForeignKey('Concurso.id'), nullable=0)
+    archivo_id = db.Column(db.Integer, db.ForeignKey('archivo_voz.id'), nullable=0)
+    concurso_id = db.Column(db.Integer, db.ForeignKey('concurso.id'), nullable=0)
 
 
 class VozSchema(ma.Schema):
     class Meta:
-        fields = ("id", "f_creacion", "email", "nombres", "apellidos", "convertida", "observaciones", "concurso_id")
+        fields = ("id", "f_creacion", "email", "nombres", "apellidos", "convertida", "observaciones", "concurso_id", "archivo_id")
+
+
 vozSchema = VozSchema()
 vocesSchema = VozSchema(many=1)
+
+
+class ArchivoVoz(db.Model):
+    id = db.Column(db.Integer, primary_key=1)
+    archivo_original = db.Column(db.String(120), nullable=0)
+    archivo_convertido = db.Column(db.String(120), nullable=1)
+    convertido = db.Column(db.Boolean, nullable=0, default=0)
+    voz = db.relationship('Voz', backref='archivo_voz', lazy=1)
+
+
+class ArchivoVozSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "convertido")
+
+
+archivoVozSchema = ArchivoVozSchema()
+archivosVozSchema = ArchivoVozSchema(many=1)

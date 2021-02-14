@@ -5,6 +5,7 @@ flask-cors
 flask-sqlalchemy
 flask-marshmallow
 flask-praetorian
+Werkzeug
 
 #tasks
 celery
