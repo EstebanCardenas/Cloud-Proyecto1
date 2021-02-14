@@ -74,6 +74,7 @@ function Buttons(logged, classes, setLogged) {
 
     function salir() {
         setLogged(false)
+        localStorage.clear()
     }
 
     if (!logged) {

@@ -37,6 +37,12 @@ export default function Login(props) {
     
     function login(evt) {
         evt.preventDefault()
+        //validar
+        if (!mail.includes('@')) {
+            alert("Introduce un correo válido")
+            return
+        }
+        //fetch
         fetch('/api/login', {
         method: 'POST',
         body: JSON.stringify({
@@ -46,7 +52,10 @@ export default function Login(props) {
         })
         .then(resp => resp.json())
         .then(json => {
-            console.log(json)
+            if (json["status_code"] == 401) {
+                alert("Login fallido: El correo o la contraseña son incorrectos")
+                return
+            }
             localStorage.setItem("mail", mail)
             localStorage.setItem("access_token", json["access_token"])
             props.setLogged(true)

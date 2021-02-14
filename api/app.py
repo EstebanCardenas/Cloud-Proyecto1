@@ -1,6 +1,6 @@
 import random, string
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, json
 from flask_cors.extension import CORS
 from flask_praetorian import Praetorian, auth_required, current_user
 from werkzeug.utils import secure_filename
@@ -50,7 +50,7 @@ def hello_world():
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    req = request.get_json()
+    req = json.loads(request.data)
     email = req.get('email', None)
     password = req.get('password', None)
     user = guard.authenticate(email, password)
@@ -59,7 +59,8 @@ def login():
 
 @app.route('/api/register', methods=['POST'])
 def register():
-    req = request.get_json()
+    req = json.loads(request.data)
+    print(req)
     email = req.get('email', None)
     password = req.get('password', None)
     nombres = req.get('nombres',None)
@@ -78,7 +79,7 @@ def register():
         return {"msg": "usuario creado"}, 201
 
     else:
-        return {"msg": "el email ya está usado"}, 400
+        return {"msg": "El email ya está registrado"}, 400
 
 
 @app.route('/api/concurso', methods=['GET','POST'])
