@@ -3,7 +3,9 @@ import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
-import PostulacionConcurso from './PostulacionConcurso'
+import PostulacionConcurso from './PostulacionConcurso';
+import ReactAudioPlayer from 'react-audio-player';
+import ReactHowlerPlayer from 'react-howler-player';
 
 import Button from '@material-ui/core/Button';
 
@@ -125,5 +127,14 @@ export default function VisualizarConcurso() {
                     </div>
                 </Fade>
         </Modal>
+        <ReactAudioPlayer
+                    src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+                    onPlay={e => console.log("onPlay")}
+                    controls
+                />
+                <ReactHowlerPlayer 
+                    src={["https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"]}
+                    isDark = {true}
+                />
 </div>;
 }
