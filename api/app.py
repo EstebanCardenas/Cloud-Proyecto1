@@ -44,12 +44,6 @@ def generate_url():
     return url
 
 
-def generate_filename():
-    filename = random_string(16)
-    while db.session.query(ArchivoVoz).filter_by(nombre=filename).count() > 0:
-        filename = random_string(16)
-    return filename
-
 def allowed_file(ext):
     return ext in ALLOWED_EXTENSIONS
 
@@ -202,17 +196,23 @@ def audio():
         return jsonify({"msg":"El archivo de audio es requerido"}),400
     ext = extract_ext(file.filename)
     if allowed_file(ext):
-        nombre = generate_filename()
-        filename = '{}.{}'.format(nombre,ext)
-        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        archivo_voz = ArchivoVoz(
-            archivo_original=path,
-            nombre=nombre
-            )
+        filename = secure_filename(file.filename)
+        archivo_voz = ArchivoVoz()
         db.session.add(archivo_voz)
-        file.save(path)
         db.session.commit()
-        return archivoVozSchema.dump(archivo_voz),201
+        try:
+            directory = os.path.join(app.config['UPLOAD_FOLDER'],'{}/'.format(archivo_voz.id))
+            os.makedirs(directory)
+            path = os.path.join(directory,filename)
+            archivo_voz.archivo_original = path
+            file.save(path)
+            db.session.commit()
+            return archivoVozSchema.dump(archivo_voz),201
+        except:
+            db.session.delete(archivo_voz)
+            db.session.commit()
+            return jsonify({"msg":"Error guardando el archivo"}),500
+
     return jsonify({"msg":"Formato de archivo no soportado"}),400
 
 
@@ -228,7 +228,9 @@ def voz():
     concurso_id = req.get('concurso_id',None)
     
     Concurso.query.get_or_404(concurso_id)
-    ArchivoVoz.query.get_or_404(archivo_id)
+    archivo = ArchivoVoz.query.get_or_404(archivo_id)
+    if not archivo.archivo_original:
+        return jsonify({"msg":"Archivo de audio no existente"}),404
 
     voz = Voz(
         f_creacion=f_creacion,
