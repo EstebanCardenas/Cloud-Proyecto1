@@ -8,6 +8,7 @@ import {
 import NavBar from './components/NavBar';
 import Home from './components/Home'
 import Concursos from './components/Concursos'
+import HomeConcurso from './components/HomeConcurso'
 import { useEffect, useState } from 'react';
 
 function App() {
@@ -15,6 +16,8 @@ function App() {
 
   //onMount
   useEffect(() => {
+    //async function getConcurso
+
     const token = localStorage.getItem("access_token")
     if (token)
       setLogged(true)
@@ -36,6 +39,13 @@ function App() {
               setLogged={setLogged}
           />
           <Concursos />
+        </Route>
+        <Route path="/homeconcurso">
+          <NavBar
+            logged={logged}
+            setLogged={setLogged}
+          />
+          <HomeConcurso />
         </Route>
       </Switch>
     </Router>
