@@ -155,7 +155,7 @@ def concurso(concurso_id):
         f_inicio = req.get('f_inicio', None)
         f_fin = req.get('f_fin',None)
         valor_paga = req.get('valor_paga',None)
-        guion = req.get('valor_paga',None)
+        guion = req.get('guion',None)
         recomendaciones = req.get('recomendaciones',None)
         imagen = req.get('imagen_base64',None)
         url = req.get('url',None)
