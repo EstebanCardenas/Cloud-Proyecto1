@@ -96,7 +96,7 @@ vocesSchema = VozSchema(many=1)
 
 class ArchivoVoz(db.Model):
     id = db.Column(db.Integer, primary_key=1)
-    archivo_original = db.Column(db.String(120), nullable=0)
+    archivo_original = db.Column(db.String(120), nullable=1)
     archivo_convertido = db.Column(db.String(120), nullable=1)
     convertido = db.Column(db.Boolean, nullable=0, default=0)
     voz = db.relationship('Voz', backref='archivo_voz', lazy=1)
@@ -104,7 +104,7 @@ class ArchivoVoz(db.Model):
 
 class ArchivoVozSchema(ma.Schema):
     class Meta:
-        fields = ("id", "convertido")
+        fields = ("id", "convertido","archivo_original")
 
 
 archivoVozSchema = ArchivoVozSchema()

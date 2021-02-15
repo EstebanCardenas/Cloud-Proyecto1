@@ -9,11 +9,7 @@ import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
 import { useState } from 'react';
-import TextField from '@material-ui/core/TextField'
-import FormControl from '@material-ui/core/FormControl'
-import InputLabel from '@material-ui/core/InputLabel'
-import Select from '@material-ui/core/Select'
-import MenuItem from '@material-ui/core/MenuItem'
+import TextField from '@material-ui/core/TextField';
 
 export default function Evento(props) {
     //hooks
@@ -143,11 +139,14 @@ export default function Evento(props) {
                 className={props.classes.classHeader}
             />
             <CardContent>
-                <Typography variant="h6">
+                {/* <Typography variant="h6">
                     <b>Categoría:</b> {props.categoria[0].toUpperCase() + props.categoria.slice(1).toLowerCase()}
                 </Typography>
                 <Typography variant="h6">
                     <b>Imagen:</b> {props.imagen[0].toUpperCase() + props.imagen.slice(1).toLowerCase()}
+                </Typography> */}
+                <Typography variant="h6">
+                    <b>Nombre:</b> {props.nombre[0].toUpperCase() + props.nombre.slice(1).toLowerCase()}
                 </Typography>
             </CardContent>
             <CardActions>

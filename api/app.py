@@ -1,4 +1,5 @@
 import random, string
+from datetime import datetime
 import os
 from flask import Flask, request, jsonify, json
 from flask_cors.extension import CORS
@@ -9,7 +10,7 @@ from models import *
 from datetime import datetime
 
 UPLOAD_FOLDER = './originales/'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'wav','mp3', 'aac', 'm4a'}
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'top secret'
@@ -28,20 +29,28 @@ ma.init_app(app)
 guard.init_app(app, UserAdmin)
 
 with app.app_context():
+    #ArchivoVoz.__table__.drop(db.engine)
     db.create_all()
 
 
-def generate_url():
+def random_string(num_chars):
     characters = string.ascii_letters + string.digits
-    url = ''.join(random.choices(characters, k=16))
+    return ''.join(random.choices(characters, k=num_chars))
+
+
+def generate_url():
+    url = random_string(10)
     while db.session.query(Concurso).filter_by(url=url).count() > 0:
-        url = ''.join(random.choices(characters, k=16))
+        url = random_string(10)
     return url
 
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+def allowed_file(ext):
+    return ext in ALLOWED_EXTENSIONS
+
+
+def extract_ext(filename):
+    return filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
 
 
 @app.route('/')
@@ -81,30 +90,32 @@ def register():
         return {"msg": "El email ya está registrado"}, 400
 
 
-@app.route('/api/concurso', methods=['GET','POST'])
+@app.route('/api/concursos', methods=['GET','POST'])
 @auth_required
 def concursos():
     user = current_user()
     if request.method == 'GET':
-        concursos = Concurso.query.filter_by(user_id=user.id)
-        return concursosSchema.dumps(concursos), 200
+        return jsonify(concursosSchema.dump(user.concursos)), 200
     elif request.method == 'POST':
-        req = json.dumps(request.data)
+        req = json.loads(request.data)
         nombre = req.get('nombre', None)
-        f_inicio = req.get('f_inicio', None)
-        f_fin = req.get('f_fin',None)
+        f_inicio = datetime.fromtimestamp(req.get('f_inicio', None) / 1000.0)
+        if (f_inicio <= datetime.now()):
+            return jsonify({"msg": "La fecha de inicio es menor o igual a la fecha actual"}), 400
+        f_fin = datetime.fromtimestamp(req.get('f_fin', None) / 1000.0)
+        if f_inicio >= f_fin:
+            return jsonify({"msg": "La fecha de inicio es igual o mayor a la de fin"}), 400
         valor_paga = req.get('valor_paga',None)
-        guion = req.get('valor_paga',None)
+        guion = req.get('guion',None)
         recomendaciones = req.get('recomendaciones',None)
-        imagen = req.get('imagen_base64',None)
+        imagen = req.get('imagen',None)
         url = req.get('url',None)
-        #TODO URL
         if not nombre or not f_inicio or not f_fin or \
             not valor_paga or not guion or not recomendaciones:
             return jsonify({"msg": "Formulario incompleto"}), 400
         if url:
             if db.session.query(Concurso).filter_by(url=url).count() > 0:
-                return jsonify({"msg": "el url ya está usado"}), 400
+                return jsonify({"msg": "El url ya está usado"}), 400
         else:
             url = generate_url()
 
@@ -121,10 +132,10 @@ def concursos():
         )
         db.session.add(concurso)
         db.session.commit()
-        return concursoSchema.dump(concurso),201
+        return concursoSchema.dump(concurso), 201
 
 
-@app.route('/api/concurso/<int:concurso_id>', methods=['GET','PUT','DELETE'])
+@app.route('/api/concursos/<int:concurso_id>', methods=['GET','PUT','DELETE'])
 @auth_required
 def concurso(concurso_id):
     user = current_user()
@@ -134,7 +145,6 @@ def concurso(concurso_id):
     if request.method == 'GET':
         return concursoSchema.dump(concurso)
     elif request.method == 'PUT':
-        #TODO URL
         req = request.get_json()
         nombre = req.get('nombre', None)
         f_inicio = req.get('f_inicio', None)
@@ -142,19 +152,25 @@ def concurso(concurso_id):
         valor_paga = req.get('valor_paga',None)
         guion = req.get('valor_paga',None)
         recomendaciones = req.get('recomendaciones',None)
-        if 'nombre' in req:
-            concurso.nombre = req['nombre']
-        if 'f_inicio' in req:
-            concurso.f_inicio = req['f_inicio']
-        if 'f_fin' in req:
-            concurso.f_fin = req['f_fin']
-        if 'valor_paga' in req:
-            concurso.valor_paga = req['valor_paga']
-        if 'guion' in req:
-            concurso.guion = req['guion']
-        if 'recomendaciones' in req:
-            concurso.recomendaciones = req['recomendaciones']
-        
+        imagen = req.get('imagen_base64',None)
+        url = req.get('url',None)
+        if nombre:
+            concurso.nombre = nombre
+        if f_inicio:
+            concurso.f_inicio = datetime.strptime(f_inicio,'%Y-%m-%d %H:%M:%S')
+        if f_fin:
+            concurso.f_fin = datetime.strptime(f_fin,'%Y-%m-%d %H:%M:%S')
+        if valor_paga:
+            concurso.valor_paga = valor_paga
+        if guion:
+            concurso.guion = guion
+        if recomendaciones:
+            concurso.recomendaciones = recomendaciones
+        if imagen:
+            concurso.imagen_base64 = imagen
+        if url:
+            if Concurso.query.filter_by(url=url).count() > 0:
+                return jsonify({"msg":"la url ya está en uso"}),400
         db.session.commit()
         return concursoSchema.dump(concurso),200
     else:
@@ -178,18 +194,26 @@ def audio():
     file = request.files['file']
     if file.filename == '':
         return jsonify({"msg":"El archivo de audio es requerido"}),400
-    if allowed_file(file.filename):
+    ext = extract_ext(file.filename)
+    if allowed_file(ext):
         filename = secure_filename(file.filename)
-        path = os.path.join(app.config['UPLOAD_FOLDER'],'id/', filename)
-        archivo_voz = ArchivoVoz(
-            archivo_original=filename,
-            convertido=False
-        )
-        path_real = os.path.join(app.config['UPLOAD_FOLDER'],'{}/'.format(archivo_voz.id), filename)
-        archivo_voz.archivo_original = path_real
-        file.save(path_real)
+        archivo_voz = ArchivoVoz()
+        db.session.add(archivo_voz)
         db.session.commit()
-        return archivoVozSchema.dump(archivo_voz)
+        try:
+            directory = os.path.join(app.config['UPLOAD_FOLDER'],'{}/'.format(archivo_voz.id))
+            os.makedirs(directory)
+            path = os.path.join(directory,filename)
+            archivo_voz.archivo_original = path
+            file.save(path)
+            db.session.commit()
+            return archivoVozSchema.dump(archivo_voz),201
+        except:
+            db.session.delete(archivo_voz)
+            db.session.commit()
+            return jsonify({"msg":"Error guardando el archivo"}),500
+
+    return jsonify({"msg":"Formato de archivo no soportado"}),400
 
 
 @app.route('/api/voz', methods=['POST'])
@@ -203,7 +227,9 @@ def voz():
     concurso_id = req.get('concurso_id',None)
     
     Concurso.query.get_or_404(concurso_id)
-    ArchivoVoz.query.get_or_404(archivo_id)
+    archivo = ArchivoVoz.query.get_or_404(archivo_id)
+    if not archivo.archivo_original:
+        return jsonify({"msg":"Archivo de audio no existente"}),404
 
     voz = Voz(
         f_creacion=f_creacion,
@@ -219,4 +245,4 @@ def voz():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

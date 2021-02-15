@@ -70,14 +70,14 @@ const useStyles = makeStyles((theme) => ({
     },
     button: {
         marginTop: theme.spacing(3),
-        marginLeft: theme.spacing(1),
+        marginLeft: "0px",
         float: 'right'
     },
 }))
 
 export default function Concursos() {
     const classes = useStyles();
-    const [eventos, setEventos] = useState([])
+    const [concursos, setConcursos] = useState([])
     //estado para nuevo evento
     const [evtNombre, setEvtNombre] = useState("")
     const [evtURLConcurso, setEvtURLConcurso] = useState("")
@@ -95,7 +95,7 @@ export default function Concursos() {
     useEffect(() => {
         const token = localStorage.getItem("access_token")
         if (token) {
-            fetch(`/api/concurso`, {
+            fetch(`/api/concursos`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -103,10 +103,12 @@ export default function Concursos() {
             .then(resp => {
                 if (resp["status"] === 200)
                     return resp.json()
+                else if (resp["status"] === 404)
+                    return []
             })
             .then(json => {
                 if (json) {
-                    setEventos(json)
+                    setConcursos(json)
                     console.log(json)
                 } else {
                     alert("No se pudieron obtener los concursos")
@@ -123,22 +125,34 @@ export default function Concursos() {
 
     function crearConcurso(evt) {
         evt.preventDefault()
-        const token = localStorage.getItem("token")
+        const token = localStorage.getItem("access_token")
+        //validación
         if (!token) {
             alert("Haz login para crear un concurso")
             return
         }
+        if (new Date(evtFechaInicio) <= new Date()) {
+            alert("La fecha de inicio es menor o igual a la actual")
+            return
+        }
+        if (new Date(evtFechaInicio) >= new Date(evtFechaFin)) {
+            alert("La fecha de inicio es mayor o igual a la de fin")
+            return
+        }
+        //fetch
         const evtDatos = {
             nombre: evtNombre,
-            url: evtURLConcurso,
             f_inicio: new Date(evtFechaInicio).getTime(),
             f_fin: new Date(evtFechaFin).getTime(),
             valor_paga: evtPago,
             guion: evtGuion,
-            recomendaciones: evtRecomendaciones,
-            imagen: evtImagen
+            recomendaciones: evtRecomendaciones
         }
-        const url = `/api/concurso/`
+        if (evtImagen !== '')
+            evtDatos["imagen"] = evtImagen
+        if (evtURLConcurso !== '')
+            evtDatos["url"] = evtURLConcurso
+        const url = `/api/concursos`
         fetch(url, {
             method: 'POST',
             headers: {
@@ -147,13 +161,15 @@ export default function Concursos() {
             body: JSON.stringify(evtDatos)
         })
         .then(resp => {
-            return resp.json()
+            return [resp.json(), resp["status"]]
         })
-        .then(json => {
-            if (json['error'])
-                alert(`Error: ${json['error']}`)
+        .then(resp => {
+            const json = resp[0]
+            const status = resp[1]
+            if (status !== 201)
+                alert(`Error: ${json['msg']}`)
             else {
-                let newArr = [...eventos]
+                let newArr = [...concursos]
                 newArr.unshift({
                     id: json["id"],
                     nombre: evtNombre,
@@ -165,8 +181,8 @@ export default function Concursos() {
                     f_inicio: evtFechaInicio,
                     f_fin: evtFechaFin
                 })
-                setEventos(newArr)
-                alert ("Concurso creado!")
+                setConcursos(newArr)
+                alert("Concurso creado!")
                 setOpen(false)
             }
         })
@@ -191,7 +207,7 @@ export default function Concursos() {
                         color="primary" 
                         justify="center"
                         onClick={() => setOpen(true)}
-                        style={{"marginLeft": "180px"}}
+                        style={{"marginLeft": "190px"}}
                     >
                         Crea un Concurso
                     </Button>
@@ -213,7 +229,7 @@ export default function Concursos() {
                             <h1 id="transition-modal-title">Detalles del Concurso:</h1>
                             <form onSubmit={crearConcurso}>
                                 <div>
-                                <Grid container spacing={3}>
+                                <Grid container spacing={2}>
                                     {/* Nombre */}
                                     <Grid item xs={12} sm={6}>
                                     <TextField
@@ -239,21 +255,19 @@ export default function Concursos() {
                                     />
                                     </Grid>
                                     {/* Imagen */}
-                                    <Grid item xs={12}>
-                                        <div> 
+                                    <Grid item xs={12} style={{"marginTop": "30px", "marginBottom": "30px"}}>
                                         <ImageUploader 
-                                        key='image-uploader'
-                                        fileContainerStyle = {{height:'100px',width:'200px'}}
-                                        withIcon={true}
-                                        singleImage={true}
-                                        withPreview={true}
-                                        label='Máximo tamaño 5MB'
-                                        buttonText='Seleccione la imagen del concurso'
-                                        onChange={event=>console.log(event)}
-                                        imgExtension={['.jpg','.png','.jpeg']}
-                                        maxFileSize={5242880}>
+                                            key='image-uploader'
+                                            fileContainerStyle = {{height:'100px',width:'150px'}}
+                                            withIcon={true}
+                                            singleImage={true}
+                                            withPreview={true}
+                                            label='Máximo tamaño 5MB'
+                                            buttonText='Selecciona la imagen del concurso'
+                                            onChange={event=>console.log(event)}
+                                            imgExtension={['.jpg','.png','.jpeg']}
+                                            maxFileSize={5242880}>
                                         </ImageUploader>
-                                        </div>
                                     </Grid>
                                     {/* Fecha Inicio */}
                                     <Grid item xs={12} sm={6}>
@@ -349,12 +363,12 @@ export default function Concursos() {
             </div>
             <Container className={classes.cardGrid} maxWidth="md">
                 <Grid container spacing={4}>
-                {eventos.length ? eventos.map((evt, idx) => (
+                {concursos.length ? concursos.map((evt, idx) => (
                     <Evento
                         key={idx}
                         classes={classes}
-                        eventos={eventos}
-                        setEventos={setEventos}
+                        eventos={concursos}
+                        setEventos={setConcursos}
                         ind={idx}
                         evtId={evt.id}
 
