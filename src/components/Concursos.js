@@ -108,15 +108,15 @@ export default function Concursos() {
                 required
             />
             <ImageUploader 
-             key='image-uploader'
-             withIcon={true}
-             singleImage={true}
-             withPreview={true}
-             label='Máximo tamaño 5MB'
-             buttonText='Seleccione la imagen del concurso'
-             onChange={props.onImage}
-             imgExtension={['.jpg','.png','.jpeg']}
-             maxFileSize={5242880}>
+                key='image-uploader'
+                withIcon={true}
+                singleImage={true}
+                withPreview={true}
+                label='Máximo tamaño 5MB'
+                buttonText='Seleccione la imagen del concurso'
+                onChange={props.onImage}
+                imgExtension={['.jpg','.png','.jpeg']}
+                maxFileSize={5242880}>
              </ImageUploader>
         </form>
     )
@@ -263,6 +263,7 @@ export default function Concursos() {
                         color="primary" 
                         justify="center"
                         onClick={() => setOpen(true)}
+                        style={{"marginLeft": "180px"}}
                     >
                         Crea un Concurso
                     </Button>
