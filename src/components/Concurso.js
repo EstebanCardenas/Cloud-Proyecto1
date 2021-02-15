@@ -340,7 +340,7 @@ export default function Evento(props) {
                 >
                     <Fade in={openEditar}>
                         <div className={props.classes.paper}>
-                        <h1 id="transition-modal-title">Editar Evento:</h1>
+                        <h1 id="transition-modal-title">Editar Concurso:</h1>
                             <form onSubmit={editarConcurso}>
                                 <div>
                                 <Grid container spacing={3}>
