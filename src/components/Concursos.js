@@ -70,7 +70,7 @@ const useStyles = makeStyles((theme) => ({
     },
     button: {
         marginTop: theme.spacing(3),
-        marginLeft: theme.spacing(1),
+        marginLeft: "0px",
         float: 'right'
     },
 }))
@@ -103,6 +103,8 @@ export default function Concursos() {
             .then(resp => {
                 if (resp["status"] === 200)
                     return resp.json()
+                else if (resp["status"] === 404)
+                    return []
             })
             .then(json => {
                 if (json) {
@@ -191,7 +193,7 @@ export default function Concursos() {
                         color="primary" 
                         justify="center"
                         onClick={() => setOpen(true)}
-                        style={{"marginLeft": "180px"}}
+                        style={{"marginLeft": "190px"}}
                     >
                         Crea un Concurso
                     </Button>
@@ -213,7 +215,7 @@ export default function Concursos() {
                             <h1 id="transition-modal-title">Detalles del Concurso:</h1>
                             <form onSubmit={crearConcurso}>
                                 <div>
-                                <Grid container spacing={3}>
+                                <Grid container spacing={2}>
                                     {/* Nombre */}
                                     <Grid item xs={12} sm={6}>
                                     <TextField
@@ -239,21 +241,19 @@ export default function Concursos() {
                                     />
                                     </Grid>
                                     {/* Imagen */}
-                                    <Grid item xs={12}>
-                                        <div> 
+                                    <Grid item xs={12} style={{"marginTop": "30px", "marginBottom": "30px"}}>
                                         <ImageUploader 
-                                        key='image-uploader'
-                                        fileContainerStyle = {{height:'100px',width:'200px'}}
-                                        withIcon={true}
-                                        singleImage={true}
-                                        withPreview={true}
-                                        label='Máximo tamaño 5MB'
-                                        buttonText='Seleccione la imagen del concurso'
-                                        onChange={event=>console.log(event)}
-                                        imgExtension={['.jpg','.png','.jpeg']}
-                                        maxFileSize={5242880}>
+                                            key='image-uploader'
+                                            fileContainerStyle = {{height:'100px',width:'150px'}}
+                                            withIcon={true}
+                                            singleImage={true}
+                                            withPreview={true}
+                                            label='Máximo tamaño 5MB'
+                                            buttonText='Selecciona la imagen del concurso'
+                                            onChange={event=>console.log(event)}
+                                            imgExtension={['.jpg','.png','.jpeg']}
+                                            maxFileSize={5242880}>
                                         </ImageUploader>
-                                        </div>
                                     </Grid>
                                     {/* Fecha Inicio */}
                                     <Grid item xs={12} sm={6}>
