@@ -86,79 +86,12 @@ export default function Concursos() {
     const [evtNombre, setEvtNombre] = useState("")
     const [evtURLConcurso, setEvtURLConcurso] = useState("")
     const [evtImagen, setEvtImagen] = useState("")
+    const [evtURLImage, setURLImage] = useState(undefined)
     const [evtGuion, setEvtGuion] = useState("")
     const [evtRecomendaciones, setEvtRecomendaciones] = useState("")
     const [evtPago, setEvtPago] = useState("")
     const [evtFechaInicio, setEvtFechaInicio] = useState("")
     const [evtFechaFin, setEvtFechaFin] = useState("")
-
-    const [progress, setProgress] = useState('getUpload')
-    const [url, setImageURL] = useState(undefined)
-    const [errorMessage, setErrorMessage] = useState('')
-    
-    const UploadComponent = props =>(
-        <form> 
-            <ImageUploader 
-                key='image-uploader'
-                withIcon={true}
-                singleImage={true}
-                withPreview={true}
-                label='Máximo tamaño 5MB'
-                buttonText='Seleccione la imagen del concurso'
-                onChange={props.onImage}
-                imgExtension={['.jpg','.png','.jpeg']}
-                maxFileSize={5242880}>
-             </ImageUploader>
-        </form>
-    )
-
-    const onUrlChange = e =>{
-        setImageURL(e.target.value);
-    };
-
-    const onImage = async(failedImages, successImages) =>{
-        if (!url){
-            console.log('missing URL')
-            setErrorMessage('Primero escriba la URL asociada a la imagen')
-            setProgress('uploadError')
-            return
-        }
-
-        setProgress('uploading')
-        try{
-            console.log('successImages', successImages)
-            const parts = successImages[0].split(';')
-            const mime = parts[0].split(':')[1];
-            const name = parts[1].split('=')[1];
-            const data = parts[2];
-            //const res = await Axios.post(url, {mime,name, image:data});
-
-            //setImageURL(res.data.imageURL)
-            setProgress('uploaded')
-        } catch(error){
-            console.log('error in upload', error);
-            setErrorMessage(error.message);
-            setProgress('uploadError')
-        }
-    }
-
-    const content = () => {
-        switch(progress){
-            case 'getUpload':
-                return <UploadComponent onUrlChange={onUrlChange} onImage={onImage} url={url}/>
-            case 'uploading':
-                return <div>Cargando...</div>
-            case 'uploaded':
-                return <img src={url} alt='uploaded' />
-            case 'uploadError':
-                return (
-                    <>
-                        <div>Error message = {errorMessage}</div>
-                        <div>Cargar una imagen</div>
-                    </>
-                )
-        }
-    }
 
     //modal
     const [open, setOpen] = useState(false)
@@ -305,7 +238,7 @@ export default function Concursos() {
                                     </Grid>
                                     {/* Imagen */}
                                     <Grid item xs={12}>
-                                        <div> {content()}</div>
+                                        <div> Hola </div>
                                     </Grid>
                                     {/* Fecha Inicio */}
                                     <Grid item xs={12} sm={6}>
