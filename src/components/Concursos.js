@@ -182,14 +182,15 @@ export default function Concursos() {
                 }
             })
             .then(resp => {
-                return resp.json()
+                if (resp["status"] === 200)
+                    return resp.json()
             })
             .then(json => {
-                if (!('error' in json)) {
+                if (json) {
                     setEventos(json)
                     console.log(json)
                 } else {
-                    console.log(json["error"])
+                    alert("No se pudieron obtener los concursos")
                 }
             })
             .catch(err => {

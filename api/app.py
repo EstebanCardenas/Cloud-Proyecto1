@@ -85,10 +85,11 @@ def register():
 @auth_required
 def concursos():
     user = current_user()
-    req = json.dumps(request.data)
     if request.method == 'GET':
-        return concursosSchema.dumps(user.concursos),200
-    else:
+        concursos = Concurso.query.filter_by(user_id=user.id)
+        return concursosSchema.dumps(concursos), 200
+    elif request.method == 'POST':
+        req = json.dumps(request.data)
         nombre = req.get('nombre', None)
         f_inicio = req.get('f_inicio', None)
         f_fin = req.get('f_fin',None)
@@ -117,7 +118,7 @@ def concursos():
             url=url,
             recomendaciones=recomendaciones,
             user_id=user.id
-            )
+        )
         db.session.add(concurso)
         db.session.commit()
         return concursoSchema.dump(concurso),201
