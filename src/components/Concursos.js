@@ -198,6 +198,7 @@ export default function Concursos() {
         }
         const evtDatos = {
             nombre: evtNombre,
+            url: evtURLConcurso,
             f_inicio: new Date(evtFechaInicio).getTime(),
             f_fin: new Date(evtFechaFin).getTime(),
             valor_paga: evtPago,
