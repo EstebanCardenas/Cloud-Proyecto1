@@ -82,7 +82,6 @@ export default function Concursos() {
     const [evtNombre, setEvtNombre] = useState("")
     const [evtURLConcurso, setEvtURLConcurso] = useState("")
     const [evtImagen, setEvtImagen] = useState("")
-    const [evtURLImage, setURLImage] = useState(undefined)
     const [evtGuion, setEvtGuion] = useState("")
     const [evtRecomendaciones, setEvtRecomendaciones] = useState("")
     const [evtPago, setEvtPago] = useState("")
@@ -241,7 +240,20 @@ export default function Concursos() {
                                     </Grid>
                                     {/* Imagen */}
                                     <Grid item xs={12}>
-                                        <div> Hola </div>
+                                        <div> 
+                                        <ImageUploader 
+                                        key='image-uploader'
+                                        fileContainerStyle = {{height:'100px',width:'200px'}}
+                                        withIcon={true}
+                                        singleImage={true}
+                                        withPreview={true}
+                                        label='Máximo tamaño 5MB'
+                                        buttonText='Seleccione la imagen del concurso'
+                                        onChange={event=>console.log(event)}
+                                        imgExtension={['.jpg','.png','.jpeg']}
+                                        maxFileSize={5242880}>
+                                        </ImageUploader>
+                                        </div>
                                     </Grid>
                                     {/* Fecha Inicio */}
                                     <Grid item xs={12} sm={6}>
