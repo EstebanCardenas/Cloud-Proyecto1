@@ -41,7 +41,7 @@ export default function Register(props) {
         evt.preventDefault()
         //validación
         if (!mail.includes('@')) {
-            alert("Introduzca un correo válido")
+            alert("Introduce un correo válido")
             return
         }
         if (pass !== passConfirm) {
@@ -58,8 +58,16 @@ export default function Register(props) {
               apellidos: apellidos,
             })
         })
-        .then(resp => resp.json())
+        .then(resp => {
+            if (resp["status"] === 400) {
+                alert(`Registro fallido: el correo ya está registrado`)
+            } else {
+                return resp.json()
+            }
+        })
         .then(json => {
+            if (json === undefined)
+                return
             alert("Registro exitoso!")
             props.setOpen(false)
         })

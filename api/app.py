@@ -1,12 +1,13 @@
 import random, string
 from datetime import datetime
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, json
 from flask_cors.extension import CORS
 from flask_praetorian import Praetorian, auth_required, current_user
 from werkzeug.utils import secure_filename
 #modelos
 from models import *
+from datetime import datetime
 
 UPLOAD_FOLDER = './originales/'
 ALLOWED_EXTENSIONS = {'wav','mp3', 'aac', 'm4a'}
@@ -59,7 +60,7 @@ def hello_world():
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    req = request.get_json()
+    req = json.loads(request.data)
     email = req.get('email', None)
     password = req.get('password', None)
     user = guard.authenticate(email, password)
@@ -68,36 +69,35 @@ def login():
 
 @app.route('/api/register', methods=['POST'])
 def register():
-    req = request.get_json()
+    req = json.loads(request.data)
     email = req.get('email', None)
     password = req.get('password', None)
     nombres = req.get('nombres',None)
     apellidos = req.get('apellidos',None)
     if not email or not password or not nombres or not apellidos:
         return jsonify({"msg": "Formulario incompleto"}), 400
-    #TODO chequear email regex
     if db.session.query(UserAdmin).filter_by(email=email).count() < 1:
         db.session.add(UserAdmin(
             email=email,
             contrasena=guard.hash_password(password),
             nombres=nombres,
             apellidos=apellidos
-            ))
+        ))
         db.session.commit()
         return {"msg": "usuario creado"}, 201
 
     else:
-        return {"msg": "el email ya está usado"}, 400
+        return {"msg": "El email ya está registrado"}, 400
 
 
-@app.route('/api/concursos', methods=['GET','POST','PUT'])
+@app.route('/api/concursos', methods=['GET','POST'])
 @auth_required
 def concursos():
     user = current_user()
-    req = request.get_json()
     if request.method == 'GET':
         return jsonify(concursosSchema.dump(user.concursos)),200
     else:
+        req = json.dumps(request.data)
         nombre = req.get('nombre', None)
         f_inicio = req.get('f_inicio', None)
         f_fin = req.get('f_fin',None)
@@ -106,33 +106,29 @@ def concursos():
         recomendaciones = req.get('recomendaciones',None)
         imagen = req.get('imagen_base64',None)
         url = req.get('url',None)
-        if request.method == 'POST':
-            if not nombre or not f_inicio or not f_fin or \
-                not valor_paga or not guion or not recomendaciones:
-                return jsonify({"msg": "Formulario incompleto"}), 400
-            if url:
-                if db.session.query(Concurso).filter_by(url=url).count() > 0:
-                    return jsonify({"msg": "el url ya está usado"}), 400
-            else:
-                url = generate_url()
-
-            concurso = Concurso(
-                nombre=nombre,
-                f_inicio=datetime.strptime(f_inicio,'%Y-%m-%d %H:%M:%S'),
-                f_fin=datetime.strptime(f_fin,'%Y-%m-%d %H:%M:%S'),
-                valor_paga=valor_paga,
-                guion=guion,
-                imagen_base64=imagen,
-                url=url,
-                recomendaciones=recomendaciones,
-                user_id=user.id
-                )
-            db.session.add(concurso)
-            db.session.commit()
-            return concursoSchema.dump(concurso),201
+        if not nombre or not f_inicio or not f_fin or \
+            not valor_paga or not guion or not recomendaciones:
+            return jsonify({"msg": "Formulario incompleto"}), 400
+        if url:
+            if db.session.query(Concurso).filter_by(url=url).count() > 0:
+                return jsonify({"msg": "el url ya está usado"}), 400
         else:
-            #TODO put
-            return jsonify({"msg":""}),200
+            url = generate_url()
+
+        concurso = Concurso(
+            nombre=nombre,
+            f_inicio=datetime.strptime(f_inicio,'%Y-%m-%d %H:%M:%S'),
+            f_fin=datetime.strptime(f_fin,'%Y-%m-%d %H:%M:%S'),
+            valor_paga=valor_paga,
+            guion=guion,
+            imagen_base64=imagen,
+            url=url,
+            recomendaciones=recomendaciones,
+            user_id=user.id
+            )
+        db.session.add(concurso)
+        db.session.commit()
+        return concursoSchema.dump(concurso),201
 
 
 @app.route('/api/concursos/<int:concurso_id>', methods=['GET','PUT','DELETE'])
@@ -218,8 +214,7 @@ def audio():
 
 @app.route('/api/voz', methods=['POST'])
 def voz():
-    #TODO Asignar fecha creaciòn desde el servidor (maybe)
-    f_creacion = req.get('f_creacion', None)
+    f_creacion = datetime.now()
     email = req.get('email', None)
     nombres = req.get('nombres',None)
     apellidos = req.get('apellidos',None)
@@ -240,7 +235,7 @@ def voz():
         observaciones=observaciones,
         archivo_id=archivo_id,
         concurso_id=concurso_id,
-        )
+    )
     db.session.commit()
     vozSchema.dump(voz)
 

@@ -74,6 +74,8 @@ function Buttons(logged, classes, setLogged) {
 
     function salir() {
         setLogged(false)
+        localStorage.clear()
+        window.location.replace('/')
     }
 
     if (!logged) {
@@ -139,9 +141,14 @@ function Buttons(logged, classes, setLogged) {
 
 function renderConcursos(classes) {
     return (
-        <Link variant="button" color="textPrimary" href="#" className={classes.link}>
+        <div>
+        <Link variant="button" color="textPrimary" className={classes.link} href="/">
+            Home
+        </Link>
+        <Link variant="button" color="textPrimary" className={classes.link} href="/concursos">
             Concursos
         </Link>
+        </div>
     )
 }
 

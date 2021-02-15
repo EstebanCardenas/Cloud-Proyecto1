@@ -10,13 +10,8 @@ import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
 import TextField from '@material-ui/core/TextField';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
 
 import ImageUploader from 'react-images-upload';
-import Axios from 'axios'
 
 const useStyles = makeStyles((theme) => ({
     icon: {
@@ -78,141 +73,78 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: theme.spacing(1),
         float: 'right'
     },
-}));
+}))
 
-export default function Eventos() {
+export default function Concursos() {
     const classes = useStyles();
     const [eventos, setEventos] = useState([])
     //estado para nuevo evento
     const [evtNombre, setEvtNombre] = useState("")
+    const [evtURLConcurso, setEvtURLConcurso] = useState("")
     const [evtImagen, setEvtImagen] = useState("")
+    const [evtURLImage, setURLImage] = useState(undefined)
     const [evtGuion, setEvtGuion] = useState("")
     const [evtRecomendaciones, setEvtRecomendaciones] = useState("")
     const [evtPago, setEvtPago] = useState("")
     const [evtFechaInicio, setEvtFechaInicio] = useState("")
     const [evtFechaFin, setEvtFechaFin] = useState("")
 
-    const [progress, setProgress] = useState('getUpload')
-    const [url, setImageURL] = useState(undefined)
-    const [errorMessage, setErrorMessage] = useState('')
-    
-    const UploadComponent = props =>(
-        <form> 
-            <TextField
-                id='urlInput'
-                label='URL del concurso' 
-                type='text' 
-                fullWidth
-                autoComplete="family-name"
-                onChange={props.onUrlChange} 
-                value={props.url}
-                required
-            />
-            <ImageUploader 
-             key='image-uploader'
-             withIcon={true}
-             singleImage={true}
-             withPreview={true}
-             label='Máximo tamaño 5MB'
-             buttonText='Seleccione la imagen del concurso'
-             onChange={props.onImage}
-             imgExtension={['.jpg','.png','.jpeg']}
-             maxFileSize={5242880}>
-             </ImageUploader>
-        </form>
-    )
-
-    const onUrlChange = e =>{
-        setImageURL(e.target.value);
-    };
-
-    const onImage = async(failedImages, successImages) =>{
-        if (!url){
-            console.log('missing URL')
-            setErrorMessage('Primero escriba la URL asociada a la imagen')
-            setProgress('uploadError')
-            return
-        }
-
-        setProgress('uploading')
-        try{
-            console.log('successImages', successImages)
-            const parts = successImages[0].split(';')
-            const mime = parts[0].split(':')[1];
-            const name = parts[1].split('=')[1];
-            const data = parts[2];
-            //const res = await Axios.post(url, {mime,name, image:data});
-
-            //setImageURL(res.data.imageURL)
-            setProgress('uploaded')
-        } catch(error){
-            console.log('error in upload', error);
-            setErrorMessage(error.message);
-            setProgress('uploadError')
-        }
-    }
-
-    const content = () => {
-        switch(progress){
-            case 'getUpload':
-                return <UploadComponent onUrlChange={onUrlChange} onImage={onImage} url={url}/>
-            case 'uploading':
-                return <div>Cargando...</div>
-            case 'uploaded':
-                return <img src={url} alt='uploaded' />
-            case 'uploadError':
-                return (
-                    <>
-                        <div>Error message = {errorMessage}</div>
-                        <div>Cargar una imagen</div>
-                    </>
-                )
-        }
-    }
-
     //modal
     const [open, setOpen] = useState(false)
 
     //onMount
     useEffect(() => {
-        const id = localStorage.getItem("id")
-        if (id) {
-            fetch(`/api/eventos/${id}`)
+        const token = localStorage.getItem("access_token")
+        if (token) {
+            fetch(`/api/concurso`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
             .then(resp => {
-                return resp.json()
+                if (resp["status"] === 200)
+                    return resp.json()
             })
             .then(json => {
-                if (!('error' in json)) {
+                if (json) {
                     setEventos(json)
                     console.log(json)
                 } else {
-                    console.log(json["error"])
+                    alert("No se pudieron obtener los concursos")
                 }
             })
             .catch(err => {
-                alert(`Error: ${err}`)
                 console.log(err)
+                alert(`Error: ${err}`)
             })
         } else {
             alert("Haz login para gestionar tus eventos")
         }
     }, [])
 
-    function crearEvento(evt) {
+    function crearConcurso(evt) {
         evt.preventDefault()
+        const token = localStorage.getItem("token")
+        if (!token) {
+            alert("Haz login para crear un concurso")
+            return
+        }
         const evtDatos = {
             nombre: evtNombre,
-            imagen: evtImagen,
+            url: evtURLConcurso,
+            f_inicio: new Date(evtFechaInicio).getTime(),
+            f_fin: new Date(evtFechaFin).getTime(),
+            valor_paga: evtPago,
             guion: evtGuion,
             recomendaciones: evtRecomendaciones,
-            pago: evtPago,
-            f_inicio: new Date(evtFechaInicio).getTime(),
-            f_fin: new Date(evtFechaFin).getTime()
+            imagen: evtImagen
         }
-        const id = localStorage.getItem("id")
-        const url = `/api/eventos/${id}`
+        const url = `/api/concurso/`
         fetch(url, {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify(evtDatos)
         })
         .then(resp => {
@@ -226,6 +158,7 @@ export default function Eventos() {
                 newArr.unshift({
                     id: json["id"],
                     nombre: evtNombre,
+                    url_concurso: evtURLConcurso,
                     imagen: evtImagen,
                     guion: evtGuion,
                     recomendaciones: evtRecomendaciones,
@@ -259,6 +192,7 @@ export default function Eventos() {
                         color="primary" 
                         justify="center"
                         onClick={() => setOpen(true)}
+                        style={{"marginLeft": "180px"}}
                     >
                         Crea un Concurso
                     </Button>
@@ -278,7 +212,7 @@ export default function Eventos() {
                         <Fade in={open}>
                         <div className={classes.paper}>
                             <h1 id="transition-modal-title">Detalles del Concurso:</h1>
-                            <form onSubmit={crearEvento}>
+                            <form onSubmit={crearConcurso}>
                                 <div>
                                 <Grid container spacing={3}>
                                     {/* Nombre */}
@@ -294,10 +228,20 @@ export default function Eventos() {
                                         onChange={evt => setEvtNombre(evt.target.value)}
                                     />
                                     </Grid>
-                                    {/* Imagen */}
                                     <Grid item xs={12} sm={6}>
-                                    <div> {content()}</div>
-                                    
+                                    <TextField
+                                        id='urlInput'
+                                        label='URL del concurso' 
+                                        type='text' 
+                                        fullWidth
+                                        autoComplete="family-name"
+                                        value={evtURLConcurso}
+                                        onChange={evt => setEvtURLConcurso(evt.target.value)}
+                                    />
+                                    </Grid>
+                                    {/* Imagen */}
+                                    <Grid item xs={12}>
+                                        <div> Hola </div>
                                     </Grid>
                                     {/* Fecha Inicio */}
                                     <Grid item xs={12} sm={6}>
@@ -403,6 +347,7 @@ export default function Eventos() {
                         evtId={evt.id}
 
                         nombre={evt.nombre}
+                        url_concurso={evt.url_concurso}
                         imagen={evt.imagen}
                         guion={evt.guion}
                         recomendaciones={evt.recomendaciones}
