@@ -48,28 +48,37 @@ export default function Evento(props) {
 
     //funciones
     function eliminarFront() {
-        let newArr = [...props.eventos]
+        let newArr = [...props.concursos]
         let rmvIdx = (a, idx) => a.slice(0,idx).concat(a.slice(idx+1, a.length))
-        props.setEventos(rmvIdx(newArr, props.ind))
+        props.setConcursos(rmvIdx(newArr, props.ind))
     }
 
     function eliminar() {
-        const url = `/api/eventos/${props.evtId}`
+        const token = localStorage.getItem("access_token")
+        if (!token)
+            return
+        const url = `/api/concursos/${props.evtId}`
         fetch(url, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         })
-        .then(resp => resp.json())
-        .then(json => {
-            if (json["error"]) {
-                alert(`Error: ${json["error"]}`)
+        .then(resp => resp["status"])
+        .then(status => {
+            if (status !== 204) {
+                alert(`Error: No se pudo eliminar el concurso`)
                 return
             }
             eliminarFront()
         })
+        .catch(err => {
+            alert(`Error: ${err}`)
+        })
     }
 
-    function darEventosModificados() {
-        const newEvs = [...props.eventos]
+    function darConcursosModificados() {
+        const newEvs = [...props.concursos]
         const newEv = {}
         if (evtNombre !== props.nombre) {
             newEvs[props.ind].nombre = evtNombre
@@ -105,7 +114,7 @@ export default function Evento(props) {
 
     function editarEvento(evt) {
         evt.preventDefault()
-        const mod = darEventosModificados()
+        const mod = darConcursosModificados()
         if (mod.length) {
             const newEv = mod[1]
             const uid = localStorage.getItem("id")
@@ -120,7 +129,7 @@ export default function Evento(props) {
                     return
                 }
                 //actualizar front
-                props.setEventos(mod[0])
+                props.setConcursos(mod[0])
                 alert("Evento actualizado!")
                 setOpenEditar(false)
             })

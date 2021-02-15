@@ -367,8 +367,8 @@ export default function Concursos() {
                     <Evento
                         key={idx}
                         classes={classes}
-                        eventos={concursos}
-                        setEventos={setConcursos}
+                        concursos={concursos}
+                        setConcursos={setConcursos}
                         ind={idx}
                         evtId={evt.id}
 
