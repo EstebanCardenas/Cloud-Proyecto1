@@ -29,7 +29,8 @@ ma.init_app(app)
 guard.init_app(app, UserAdmin)
 
 with app.app_context():
-    #ArchivoVoz.__table__.drop(db.engine)
+    #Voz.__table__.drop(db.engine)
+    db.drop_all()
     db.create_all()
 
 
@@ -186,9 +187,10 @@ def concurso(concurso_id):
 
 @app.route('/api/url/<string:concurso_url>', methods=['GET'])
 def concursoUrl(concurso_url):
-    concurso = db.session.query(Concurso).filter_by(url=url).first()
+    now = datetime.now()
+    concurso = Concurso.query.filter_by(url=url).filter((Concurso.f_inicio <= now) & (Concurso.f_fin >= now)).first()
     if not concurso:
-        return jsonify({"msg":"No existe ningun concurso con la url especificada"}),404
+        return jsonify({"msg":"No existe ningún concurso activo con la url especificada"}),404
     return concursoSchema.dump(concurso),200
 
 
@@ -262,14 +264,33 @@ def subir_voz():
 
 
 @app.route('/api/concursos/<int:concurso_id>/voces', methods=['GET'])
+@auth_required
 def voces_concurso(concurso_id):
     concurso = Concurso.query.get_or_404(concurso_id)
+    user = current_user()
+    if user.id != concurso.user_id:
+        return jsonify({"msg":"Debe ser el dueño del concurso para ver las voces"}),403
     page = request.args.get('page')
     page = int(page) if page else 1
     voces_pag = Voz.query.filter_by(concurso_id=concurso_id).order_by(desc(Voz.f_creacion)).paginate(page=page,per_page=50)
     voces = voces_pag.items
     num_pags = voces_pag.pages
-    return jsonify({"voces":VocesSchema.dump(voces), "total_pags":num_pags}),200
+    return jsonify({"voces":vocesSchema.dump(voces), "total_pags":num_pags}),200
+
+
+@app.route('/api/url/<string:concurso_url>/voces', methods=['GET'])
+def voces_concurso_activo(url):
+    now = datetime.now()
+    concurso = Concurso.query.filter_by(url=url).filter((Concurso.f_inicio <= now) & (Concurso.f_fin >= now)).first()
+    if not concurso:
+        return jsonify({"msg":"No existe ningún concurso activo con la url especificada"}),404
+    page = request.args.get('page')
+    page = int(page) if page else 1
+    voces_pag = Voz.query.filter_by(concurso_id=concurso_id).filter(Voz.archivo_voz.has(convertido=True)).\
+        order_by(desc(Voz.f_creacion)).paginate(page=page,per_page=50)
+    voces = voces_pag.items
+    num_pags = voces_pag.pages
+    return jsonify({"voces":vocesSchemaSeguro.dump(voces), "total_pags":num_pags}),200
 
 
 if __name__ == '__main__':

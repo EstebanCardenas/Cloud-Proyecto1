@@ -60,7 +60,7 @@ class Concurso(db.Model):
     recomendaciones = db.Column(db.String(2000), nullable=0)
     #relaciones
     user_id = db.Column(db.Integer, db.ForeignKey('user_admin.id'), nullable=0)
-    voces = db.relationship('Voz', backref='concurso', lazy=1)
+    voces = db.relationship('Voz', backref='concurso', cascade="all, delete", lazy=1)
 
 
 class ConcursoSchema(ma.Schema):
@@ -90,8 +90,14 @@ class VozSchema(ma.Schema):
         fields = ("id", "f_creacion", "email", "nombres", "apellidos", "convertida", "observaciones", "concurso_id", "archivo_id")
 
 
+class VozSchemaSeguro(ma.Schema):
+    class Meta:
+        fields = ("f_creacion", "archivo_id")
+
+
 vozSchema = VozSchema()
 vocesSchema = VozSchema(many=1)
+vocesSchemaSeguro = VozSchemaSeguro(many=1)
 
 
 class ArchivoVoz(db.Model):
@@ -99,7 +105,7 @@ class ArchivoVoz(db.Model):
     archivo_original = db.Column(db.String(120), nullable=1)
     archivo_convertido = db.Column(db.String(120), nullable=1)
     convertido = db.Column(db.Boolean, nullable=0, default=0)
-    voz = db.relationship('Voz', backref='archivo_voz', lazy=1)
+    voz = db.relationship('Voz', backref=db.backref('archivo_voz', cascade="all, delete"), uselist=False, lazy=1)
 
 
 class ArchivoVozSchema(ma.Schema):
