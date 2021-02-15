@@ -99,12 +99,17 @@ def concursos():
     elif request.method == 'POST':
         req = json.loads(request.data)
         nombre = req.get('nombre', None)
-        f_inicio = datetime.fromtimestamp(req.get('f_inicio', None) / 1000.0)
-        if (f_inicio <= datetime.now()):
-            return jsonify({"msg": "La fecha de inicio es menor o igual a la fecha actual"}), 400
-        f_fin = datetime.fromtimestamp(req.get('f_fin', None) / 1000.0)
-        if f_inicio >= f_fin:
-            return jsonify({"msg": "La fecha de inicio es igual o mayor a la de fin"}), 400
+        f_inicio = req.get('f_inicio', None)
+        if f_inicio:
+            f_inicio = datetime.fromisoformat(f_inicio)
+            if (f_inicio <= datetime.now()):
+                return jsonify({"msg": "La fecha de inicio es menor o igual a la fecha actual"}), 400
+        f_fin = req.get('f_fin', None)
+        if f_fin:
+            f_fin = datetime.fromisoformat(f_fin)
+            if f_inicio:
+                if f_inicio >= f_fin:
+                    return jsonify({"msg": "La fecha de inicio es igual o mayor a la de fin"}), 400
         valor_paga = req.get('valor_paga',None)
         guion = req.get('guion',None)
         recomendaciones = req.get('recomendaciones',None)
