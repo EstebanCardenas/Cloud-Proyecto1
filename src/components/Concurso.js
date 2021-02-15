@@ -97,6 +97,10 @@ export default function Evento(props) {
             newEv["recomendaciones"] = evtRecomendaciones
         }
         if (evtPago !== props.valor_paga) {
+            if (evtPago <= 0) {
+                alert("Introduce un valor de pago válido")
+                return
+            }
             newEvs[props.ind].valor_paga = evtPago
             newEv["valor_paga"] = evtPago
         }
@@ -125,7 +129,7 @@ export default function Evento(props) {
         return Object.keys(newEv).length ? [newEvs, newEv] : []
     }
 
-    function editarEvento(evt) {
+    function editarConcurso(evt) {
         evt.preventDefault()
         const token = localStorage.getItem("access_token")
         //validación
@@ -204,7 +208,7 @@ export default function Evento(props) {
                 >
                     <Fade in={openVer}>
                         <div className={props.classes.paper}>
-                            <h1 id="transition-modal-title">Detalles del Evento:</h1>
+                            <h1 id="transition-modal-title">Detalles del Concurso:</h1>
                             <div>
                                 <Grid container spacing={3}>
                                     {/* Nombre */}
@@ -337,7 +341,7 @@ export default function Evento(props) {
                     <Fade in={openEditar}>
                         <div className={props.classes.paper}>
                         <h1 id="transition-modal-title">Editar Evento:</h1>
-                            <form onSubmit={editarEvento}>
+                            <form onSubmit={editarConcurso}>
                                 <div>
                                 <Grid container spacing={3}>
                                     {/* Nombre */}

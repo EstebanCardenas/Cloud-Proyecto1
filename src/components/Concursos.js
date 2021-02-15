@@ -139,6 +139,10 @@ export default function Concursos() {
             alert("La fecha de inicio es mayor o igual a la de fin")
             return
         }
+        if (evtPago <= 0) {
+            alert("Introduce un valor de pago válido")
+            return
+        }
         //fetch
         const evtDatos = {
             nombre: evtNombre,
