@@ -61,6 +61,7 @@ export default function Login(props) {
             props.setLogged(true)
             alert("Login exitoso!")
             props.setOpen(false)
+            window.location.reload()
         })
         .catch(err => {
             console.log(err)

@@ -193,8 +193,8 @@ export default function Concursos() {
                 }
             })
             .catch(err => {
-                alert(`Error: ${err}`)
                 console.log(err)
+                alert(`Error: ${err}`)
             })
         } else {
             alert("Haz login para gestionar tus eventos")
