@@ -95,9 +95,9 @@ def register():
 def concursos():
     user = current_user()
     if request.method == 'GET':
-        return jsonify(concursosSchema.dump(user.concursos)),200
-    else:
-        req = json.dumps(request.data)
+        return jsonify(concursosSchema.dump(user.concursos)), 200
+    elif request.method == 'POST':
+        req = json.loads(request.data)
         nombre = req.get('nombre', None)
         f_inicio = datetime.fromtimestamp(req.get('f_inicio', None) / 1000.0)
         if (f_inicio <= datetime.now()):
