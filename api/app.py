@@ -1,4 +1,5 @@
 import random, string
+from datetime import datetime
 import os
 from flask import Flask, request, jsonify
 from flask_cors.extension import CORS
@@ -8,7 +9,7 @@ from werkzeug.utils import secure_filename
 from models import *
 
 UPLOAD_FOLDER = './originales/'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'wav','mp3', 'aac', 'm4a'}
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'top secret'
@@ -27,20 +28,34 @@ ma.init_app(app)
 guard.init_app(app, UserAdmin)
 
 with app.app_context():
+    #ArchivoVoz.__table__.drop(db.engine)
     db.create_all()
 
 
-def generate_url():
+def random_string(num_chars):
     characters = string.ascii_letters + string.digits
-    url = ''.join(random.choices(characters, k=16))
+    return ''.join(random.choices(characters, k=num_chars))
+
+
+def generate_url():
+    url = random_string(10)
     while db.session.query(Concurso).filter_by(url=url).count() > 0:
-        url = ''.join(random.choices(characters, k=16))
+        url = random_string(10)
     return url
 
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+def generate_filename():
+    filename = random_string(16)
+    while db.session.query(ArchivoVoz).filter_by(nombre=filename).count() > 0:
+        filename = random_string(16)
+    return filename
+
+def allowed_file(ext):
+    return ext in ALLOWED_EXTENSIONS
+
+
+def extract_ext(filename):
+    return filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
 
 
 @app.route('/')
@@ -81,49 +96,52 @@ def register():
         return {"msg": "el email ya está usado"}, 400
 
 
-@app.route('/api/concurso', methods=['GET','POST'])
+@app.route('/api/concursos', methods=['GET','POST','PUT'])
 @auth_required
 def concursos():
     user = current_user()
     req = request.get_json()
     if request.method == 'GET':
-        return concursosSchema.dump(user.concursos),200
+        return jsonify(concursosSchema.dump(user.concursos)),200
     else:
         nombre = req.get('nombre', None)
         f_inicio = req.get('f_inicio', None)
         f_fin = req.get('f_fin',None)
         valor_paga = req.get('valor_paga',None)
-        guion = req.get('valor_paga',None)
+        guion = req.get('guion',None)
         recomendaciones = req.get('recomendaciones',None)
         imagen = req.get('imagen_base64',None)
         url = req.get('url',None)
-        #TODO URL
-        if not nombre or not f_inicio or not f_fin or \
-            not valor_paga or not guion or not recomendaciones:
-            return jsonify({"msg": "Formulario incompleto"}), 400
-        if url:
-            if db.session.query(Concurso).filter_by(url=url).count() > 0:
-                return jsonify({"msg": "el url ya está usado"}), 400
+        if request.method == 'POST':
+            if not nombre or not f_inicio or not f_fin or \
+                not valor_paga or not guion or not recomendaciones:
+                return jsonify({"msg": "Formulario incompleto"}), 400
+            if url:
+                if db.session.query(Concurso).filter_by(url=url).count() > 0:
+                    return jsonify({"msg": "el url ya está usado"}), 400
+            else:
+                url = generate_url()
+
+            concurso = Concurso(
+                nombre=nombre,
+                f_inicio=datetime.strptime(f_inicio,'%Y-%m-%d %H:%M:%S'),
+                f_fin=datetime.strptime(f_fin,'%Y-%m-%d %H:%M:%S'),
+                valor_paga=valor_paga,
+                guion=guion,
+                imagen_base64=imagen,
+                url=url,
+                recomendaciones=recomendaciones,
+                user_id=user.id
+                )
+            db.session.add(concurso)
+            db.session.commit()
+            return concursoSchema.dump(concurso),201
         else:
-            url = generate_url()
-
-        concurso = Concurso(
-            nombre=nombre,
-            f_inicio=f_inicio,
-            f_fin=f_fin,
-            valor_paga=valor_paga,
-            guion=guion,
-            imagen_base64=imagen,
-            url=url,
-            recomendaciones=recomendaciones,
-            user_id=user.id
-            )
-        db.session.add(concurso)
-        db.session.commit()
-        return concursoSchema.dump(concurso),201
+            #TODO put
+            return jsonify({"msg":""}),200
 
 
-@app.route('/api/concurso/<int:concurso_id>', methods=['GET','PUT','DELETE'])
+@app.route('/api/concursos/<int:concurso_id>', methods=['GET','PUT','DELETE'])
 @auth_required
 def concurso(concurso_id):
     user = current_user()
@@ -133,7 +151,6 @@ def concurso(concurso_id):
     if request.method == 'GET':
         return concursoSchema.dump(concurso)
     elif request.method == 'PUT':
-        #TODO URL
         req = request.get_json()
         nombre = req.get('nombre', None)
         f_inicio = req.get('f_inicio', None)
@@ -141,19 +158,25 @@ def concurso(concurso_id):
         valor_paga = req.get('valor_paga',None)
         guion = req.get('valor_paga',None)
         recomendaciones = req.get('recomendaciones',None)
-        if 'nombre' in req:
-            concurso.nombre = req['nombre']
-        if 'f_inicio' in req:
-            concurso.f_inicio = req['f_inicio']
-        if 'f_fin' in req:
-            concurso.f_fin = req['f_fin']
-        if 'valor_paga' in req:
-            concurso.valor_paga = req['valor_paga']
-        if 'guion' in req:
-            concurso.guion = req['guion']
-        if 'recomendaciones' in req:
-            concurso.recomendaciones = req['recomendaciones']
-        
+        imagen = req.get('imagen_base64',None)
+        url = req.get('url',None)
+        if nombre:
+            concurso.nombre = nombre
+        if f_inicio:
+            concurso.f_inicio = datetime.strptime(f_inicio,'%Y-%m-%d %H:%M:%S')
+        if f_fin:
+            concurso.f_fin = datetime.strptime(f_fin,'%Y-%m-%d %H:%M:%S')
+        if valor_paga:
+            concurso.valor_paga = valor_paga
+        if guion:
+            concurso.guion = guion
+        if recomendaciones:
+            concurso.recomendaciones = recomendaciones
+        if imagen:
+            concurso.imagen_base64 = imagen
+        if url:
+            if Concurso.query.filter_by(url=url).count() > 0:
+                return jsonify({"msg":"la url ya está en uso"}),400
         db.session.commit()
         return concursoSchema.dump(concurso),200
     else:
@@ -177,18 +200,20 @@ def audio():
     file = request.files['file']
     if file.filename == '':
         return jsonify({"msg":"El archivo de audio es requerido"}),400
-    if allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        path = os.path.join(app.config['UPLOAD_FOLDER'],'id/', filename)
+    ext = extract_ext(file.filename)
+    if allowed_file(ext):
+        nombre = generate_filename()
+        filename = '{}.{}'.format(nombre,ext)
+        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         archivo_voz = ArchivoVoz(
-            archivo_original=filename,
-            convertido=False
+            archivo_original=path,
+            nombre=nombre
             )
-        path_real = os.path.join(app.config['UPLOAD_FOLDER'],'{}/'.format(archivo_voz.id), filename)
-        archivo_voz.archivo_original = path_real
-        file.save(path_real)
+        db.session.add(archivo_voz)
+        file.save(path)
         db.session.commit()
-        return archivoVozSchema.dump(archivo_voz)
+        return archivoVozSchema.dump(archivo_voz),201
+    return jsonify({"msg":"Formato de archivo no soportado"}),400
 
 
 @app.route('/api/voz', methods=['POST'])
@@ -219,4 +244,4 @@ def voz():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
