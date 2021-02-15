@@ -19,6 +19,9 @@ venv
 .env.test.local
 .env.production.local
 __pycache__
+api/originales
+api/convertidas
+test.db
 
 npm-debug.log*
 yarn-debug.log*
