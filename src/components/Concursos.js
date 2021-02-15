@@ -377,7 +377,7 @@ export default function Concursos() {
                         imagen={evt.imagen}
                         guion={evt.guion}
                         recomendaciones={evt.recomendaciones}
-                        pago={evt.valor_paga}
+                        valor_paga={evt.valor_paga}
                         f_inicio={evt.f_inicio}
                         f_fin={evt.f_fin}
                     />

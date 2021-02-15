@@ -146,11 +146,11 @@ def concurso(concurso_id):
     user = current_user()
     concurso = Concurso.query.get_or_404(concurso_id)
     if user.id != concurso.user_id:
-        return {"msg":"Solo se pueden acceder a concursos propios"},403
+        return {"msg":"Sólo se pueden acceder a concursos propios"},403
     if request.method == 'GET':
         return concursoSchema.dump(concurso)
     elif request.method == 'PUT':
-        req = request.get_json()
+        req = json.loads(request.data)
         nombre = req.get('nombre', None)
         f_inicio = req.get('f_inicio', None)
         f_fin = req.get('f_fin',None)
@@ -162,9 +162,9 @@ def concurso(concurso_id):
         if nombre:
             concurso.nombre = nombre
         if f_inicio:
-            concurso.f_inicio = datetime.strptime(f_inicio,'%Y-%m-%d %H:%M:%S')
+            concurso.f_inicio = datetime.fromisoformat(f_inicio)
         if f_fin:
-            concurso.f_fin = datetime.strptime(f_fin,'%Y-%m-%d %H:%M:%S')
+            concurso.f_fin = datetime.fromisoformat(f_fin)
         if valor_paga:
             concurso.valor_paga = valor_paga
         if guion:

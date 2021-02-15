@@ -20,7 +20,7 @@ export default function Evento(props) {
     const [evtImagen, setEvtImagen] = useState(props.imagen)
     const [evtGuion, setEvtGuion] = useState(props.guion)
     const [evtRecomendaciones, setEvtRecomendaciones] = useState(props.recomendaciones)
-    const [evtPago, setEvtPago] = useState(props.pago)
+    const [evtPago, setEvtPago] = useState(props.valor_paga)
     const [evtFechaInicio, setEvtFechaInicio] = useState(props.f_inicio)
     const [evtFechaFin, setEvtFechaFin] = useState(props.f_fin)
 
@@ -96,17 +96,30 @@ export default function Evento(props) {
             newEvs[props.ind].recomendaciones = evtRecomendaciones
             newEv["recomendaciones"] = evtRecomendaciones
         }
-        if (evtPago !== props.pago) {
-            newEvs[props.ind].pago = evtPago
-            newEv["pago"] = evtPago
+        if (evtPago !== props.valor_paga) {
+            newEvs[props.ind].valor_paga = evtPago
+            newEv["valor_paga"] = evtPago
         }
         if (evtFechaInicio !== props.f_inicio) {
+            let date = new Date(evtFechaInicio)
+            if (date <= new Date()) {
+                alert("La fecha de inicio es menor o igual a la fecha actual")
+                return
+            }
+            if (date >= new Date(evtFechaFin)) {
+                alert("La fecha de inicio es mayor o igual a la fecha de fin")
+                return
+            }
             newEvs[props.ind].f_inicio = evtFechaInicio
-            newEv["f_inicio"] = new Date(evtFechaInicio).getTime()
+            newEv["f_inicio"] = evtFechaInicio
         }
         if (evtFechaFin !== props.f_fin) {
+            if (new Date(evtFechaFin) <= new Date(evtFechaInicio)) {
+                alert("La fecha de fin es menor o igual a la de inicio")
+                return
+            }
             newEvs[props.ind].f_fin = evtFechaFin
-            newEv["f_fin"] = new Date(evtFechaFin).getTime()
+            newEv["f_fin"] = evtFechaFin
         }
         //Devolver modificado
         return Object.keys(newEv).length ? [newEvs, newEv] : []
@@ -114,24 +127,39 @@ export default function Evento(props) {
 
     function editarEvento(evt) {
         evt.preventDefault()
+        const token = localStorage.getItem("access_token")
+        //validación
+        if (!token)
+            return
         const mod = darConcursosModificados()
+        if (!mod)
+            return
+        //fetch
         if (mod.length) {
             const newEv = mod[1]
-            const uid = localStorage.getItem("id")
-            fetch(`/api/eventos/${uid}/${props.evtId}`, {
+            fetch(`/api/concursos/${props.evtId}`, {
                 method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(newEv)
             })
-            .then(resp => resp.json())
-            .then(json => {
-                if (json['error']) {
-                    alert(`Error: ${json['error']}`)
+            .then(resp => [resp.json(), resp["status"]])
+            .then(resp => {
+                const json = resp[0]
+                const status = resp[1]
+                if (status !== 200) {
+                    alert(`Error: ${json['msg']}`)
                     return
                 }
                 //actualizar front
                 props.setConcursos(mod[0])
                 alert("Evento actualizado!")
                 setOpenEditar(false)
+            })
+            .catch(err => {
+                console.log(err)
+                alert(`Error: ${err}`)
             })
         } else {
             alert("No se ha modificado ningún atributo")
@@ -280,7 +308,7 @@ export default function Evento(props) {
                                         label="Pago"
                                         type="number"
                                         required
-                                        value={props.pago}
+                                        value={props.valor_paga}
                                         InputProps={{
                                             readOnly: true,
                                         }}
