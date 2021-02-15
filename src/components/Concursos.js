@@ -84,6 +84,7 @@ export default function Concursos() {
     const [eventos, setEventos] = useState([])
     //estado para nuevo evento
     const [evtNombre, setEvtNombre] = useState("")
+    const [evtURLConcurso, setEvtURLConcurso] = useState("")
     const [evtImagen, setEvtImagen] = useState("")
     const [evtGuion, setEvtGuion] = useState("")
     const [evtRecomendaciones, setEvtRecomendaciones] = useState("")
@@ -97,16 +98,6 @@ export default function Concursos() {
     
     const UploadComponent = props =>(
         <form> 
-            <TextField
-                id='urlInput'
-                label='URL del concurso' 
-                type='text' 
-                fullWidth
-                autoComplete="family-name"
-                onChange={props.onUrlChange} 
-                value={props.url}
-                required
-            />
             <ImageUploader 
                 key='image-uploader'
                 withIcon={true}
@@ -206,6 +197,7 @@ export default function Concursos() {
         evt.preventDefault()
         const evtDatos = {
             nombre: evtNombre,
+            url_concurso: evtURLConcurso,
             imagen: evtImagen,
             guion: evtGuion,
             recomendaciones: evtRecomendaciones,
@@ -230,6 +222,7 @@ export default function Concursos() {
                 newArr.unshift({
                     id: json["id"],
                     nombre: evtNombre,
+                    url_concurso: evtURLConcurso,
                     imagen: evtImagen,
                     guion: evtGuion,
                     recomendaciones: evtRecomendaciones,
@@ -297,6 +290,17 @@ export default function Concursos() {
                                         autoComplete="given-name"
                                         value={evtNombre}
                                         onChange={evt => setEvtNombre(evt.target.value)}
+                                    />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        id='urlInput'
+                                        label='URL del concurso' 
+                                        type='text' 
+                                        fullWidth
+                                        autoComplete="family-name"
+                                        value={evtURLConcurso}
+                                        onChange={evt => setEvtURLConcurso(evt.target.value)}
                                     />
                                     </Grid>
                                     {/* Imagen */}
@@ -407,6 +411,7 @@ export default function Concursos() {
                         evtId={evt.id}
 
                         nombre={evt.nombre}
+                        url_concurso={evt.url_concurso}
                         imagen={evt.imagen}
                         guion={evt.guion}
                         recomendaciones={evt.recomendaciones}
