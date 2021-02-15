@@ -222,17 +222,12 @@ def subir_audio():
 
 
 @app.route('/api/audio/<int:audio_id>', methods=['GET'])
-@auth_required
 def descargar_audio(audio_id):
     archivo = ArchivoVoz.query.get_or_404(audio_id)
     voz = archivo.voz
     convertido = request.args.get('convertido') == '1'
     if not voz or not archivo.archivo_original:
         return jsonify({"msg":"Archivo de voz no encontrado"}),404
-    user = current_user()
-    if Concurso.query.get(voz.concurso_id).user_id != user.id:
-        return jsonify({"msg":"Debe ser el dueño del concurso en donde se subió \
-            este archivo de voz para descargarlo"}),403
     if convertido and not archivo.convertido:
         return jsonify({"msg":"El archivo de voz no se ha convertido"}),400
     return send_file(archivo.archivo_convertido if convertido else archivo.archivo_original),200
@@ -267,12 +262,8 @@ def subir_voz():
 
 
 @app.route('/api/concursos/<int:concurso_id>/voces', methods=['GET'])
-@auth_required
 def voces_concurso(concurso_id):
     concurso = Concurso.query.get_or_404(concurso_id)
-    user = current_user()
-    if user.id != concurso.user_id:
-        return jsonify({"msg":"Debe ser el dueño del concurso para ver las voces"}),403
     page = request.args.get('page')
     page = int(page) if page else 1
     voces_pag = Voz.query.filter_by(concurso_id=concurso_id).order_by(desc(Voz.f_creacion)).paginate(page=page,per_page=50)
