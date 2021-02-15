@@ -16,7 +16,6 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import ImageUploader from 'react-images-upload';
-import Axios from 'axios'
 
 const useStyles = makeStyles((theme) => ({
     icon: {
@@ -80,7 +79,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function Eventos() {
+export default function Concursos() {
     const classes = useStyles();
     const [eventos, setEventos] = useState([])
     //estado para nuevo evento
@@ -175,9 +174,13 @@ export default function Eventos() {
 
     //onMount
     useEffect(() => {
-        const id = localStorage.getItem("id")
-        if (id) {
-            fetch(`/api/eventos/${id}`)
+        const token = localStorage.getItem("access_token")
+        if (token) {
+            fetch(`/api/concurso`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
             .then(resp => {
                 return resp.json()
             })

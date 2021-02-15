@@ -6,6 +6,7 @@ from flask_praetorian import Praetorian, auth_required, current_user
 from werkzeug.utils import secure_filename
 #modelos
 from models import *
+from datetime import datetime
 
 UPLOAD_FOLDER = './originales/'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
@@ -60,21 +61,19 @@ def login():
 @app.route('/api/register', methods=['POST'])
 def register():
     req = json.loads(request.data)
-    print(req)
     email = req.get('email', None)
     password = req.get('password', None)
     nombres = req.get('nombres',None)
     apellidos = req.get('apellidos',None)
     if not email or not password or not nombres or not apellidos:
         return jsonify({"msg": "Formulario incompleto"}), 400
-    #TODO chequear email regex
     if db.session.query(UserAdmin).filter_by(email=email).count() < 1:
         db.session.add(UserAdmin(
             email=email,
             contrasena=guard.hash_password(password),
             nombres=nombres,
             apellidos=apellidos
-            ))
+        ))
         db.session.commit()
         return {"msg": "usuario creado"}, 201
 
@@ -86,9 +85,9 @@ def register():
 @auth_required
 def concursos():
     user = current_user()
-    req = request.get_json()
+    req = json.dumps(request.data)
     if request.method == 'GET':
-        return concursosSchema.dump(user.concursos),200
+        return concursosSchema.dumps(user.concursos),200
     else:
         nombre = req.get('nombre', None)
         f_inicio = req.get('f_inicio', None)
@@ -184,7 +183,7 @@ def audio():
         archivo_voz = ArchivoVoz(
             archivo_original=filename,
             convertido=False
-            )
+        )
         path_real = os.path.join(app.config['UPLOAD_FOLDER'],'{}/'.format(archivo_voz.id), filename)
         archivo_voz.archivo_original = path_real
         file.save(path_real)
@@ -194,8 +193,7 @@ def audio():
 
 @app.route('/api/voz', methods=['POST'])
 def voz():
-    #TODO Asignar fecha creaciòn desde el servidor (maybe)
-    f_creacion = req.get('f_creacion', None)
+    f_creacion = datetime.now()
     email = req.get('email', None)
     nombres = req.get('nombres',None)
     apellidos = req.get('apellidos',None)
@@ -214,7 +212,7 @@ def voz():
         observaciones=observaciones,
         archivo_id=archivo_id,
         concurso_id=concurso_id,
-        )
+    )
     db.session.commit()
     vozSchema.dump(voz)
 
