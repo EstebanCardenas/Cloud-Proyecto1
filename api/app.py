@@ -91,23 +91,20 @@ def concursos():
     elif request.method == 'POST':
         req = json.dumps(request.data)
         nombre = req.get('nombre', None)
-        f_inicio = datetime.fromtimestamp(req.get('f_inicio', None)/1000.0)
-        if (f_inicio <= datetime.now()):
-            return jsonify({"msg": "La fecha de inicio es menor o igual a la fecha actual"}), 400
-        f_fin = datetime.fromtimestamp(req.get('f_fin',None)/1000.0)
-        if f_inicio >= f_fin:
-            return jsonify({"msg": "La fecha de inicio es igual o mayor a la de fin"}), 400
-        valor_paga = req.get('valor_paga', None)
-        guion = req.get('valor_paga', None)
-        recomendaciones = req.get('recomendaciones', None)
-        imagen = req.get('imagen', None)
-        url = req.get('url', None)
+        f_inicio = req.get('f_inicio', None)
+        f_fin = req.get('f_fin',None)
+        valor_paga = req.get('valor_paga',None)
+        guion = req.get('valor_paga',None)
+        recomendaciones = req.get('recomendaciones',None)
+        imagen = req.get('imagen_base64',None)
+        url = req.get('url',None)
+        #TODO URL
         if not nombre or not f_inicio or not f_fin or \
             not valor_paga or not guion or not recomendaciones:
             return jsonify({"msg": "Formulario incompleto"}), 400
         if url:
             if db.session.query(Concurso).filter_by(url=url).count() > 0:
-                return jsonify({"msg": "El url ya está usado"}), 400
+                return jsonify({"msg": "el url ya está usado"}), 400
         else:
             url = generate_url()
 
@@ -124,7 +121,7 @@ def concursos():
         )
         db.session.add(concurso)
         db.session.commit()
-        return concursoSchema.dump(concurso), 201
+        return concursoSchema.dump(concurso),201
 
 
 @app.route('/api/concurso/<int:concurso_id>', methods=['GET','PUT','DELETE'])
