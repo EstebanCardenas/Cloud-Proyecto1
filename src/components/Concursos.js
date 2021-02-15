@@ -10,10 +10,6 @@ import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
 import TextField from '@material-ui/core/TextField';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
 
 import ImageUploader from 'react-images-upload';
 
@@ -77,7 +73,7 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: theme.spacing(1),
         float: 'right'
     },
-}));
+}))
 
 export default function Concursos() {
     const classes = useStyles();
@@ -126,22 +122,28 @@ export default function Concursos() {
         }
     }, [])
 
-    function crearEvento(evt) {
+    function crearConcurso(evt) {
         evt.preventDefault()
+        const token = localStorage.getItem("token")
+        if (!token) {
+            alert("Haz login para crear un concurso")
+            return
+        }
         const evtDatos = {
             nombre: evtNombre,
-            url_concurso: evtURLConcurso,
-            imagen: evtImagen,
+            f_inicio: new Date(evtFechaInicio).getTime(),
+            f_fin: new Date(evtFechaFin).getTime(),
+            valor_paga: evtPago,
             guion: evtGuion,
             recomendaciones: evtRecomendaciones,
-            pago: evtPago,
-            f_inicio: new Date(evtFechaInicio).getTime(),
-            f_fin: new Date(evtFechaFin).getTime()
+            imagen: evtImagen
         }
-        const id = localStorage.getItem("id")
-        const url = `/api/eventos/${id}`
+        const url = `/api/concurso/`
         fetch(url, {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify(evtDatos)
         })
         .then(resp => {
@@ -209,7 +211,7 @@ export default function Concursos() {
                         <Fade in={open}>
                         <div className={classes.paper}>
                             <h1 id="transition-modal-title">Detalles del Concurso:</h1>
-                            <form onSubmit={crearEvento}>
+                            <form onSubmit={crearConcurso}>
                                 <div>
                                 <Grid container spacing={3}>
                                     {/* Nombre */}
