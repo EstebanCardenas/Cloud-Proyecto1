@@ -75,6 +75,7 @@ export default function VisualizarConcurso() {
     const classes = useStyles();
     const [concurso, setConcurso] = useState({})
     const [openPostulacion, setOpenPostulacion] = useState(false)
+    const [concursoId, setConcursoId] = useState("")
 
     useEffect(() => {
         async function getConcurso(){
@@ -98,15 +99,18 @@ export default function VisualizarConcurso() {
     })
 
     return <div>
-        <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            className={classes.button}
-            onClick = {() => {setOpenPostulacion(true)}}
-        >
-            Postularme
-        </Button>
+        {[{concurso_id:'a'},{concurso_id:'b'},{concurso_id:'c'}].map(concurso => <Button
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    className={classes.submit}
+                    onClick = {() => {
+                        setOpenPostulacion(true)
+                        setConcursoId(concurso.concurso_id)
+                    }}
+                >
+                    {'Postularme concurso: ' + concurso.concurso_id}
+                </Button>)}
 
         <Modal
                 aria-labelledby="transition-modal-login"
@@ -123,6 +127,7 @@ export default function VisualizarConcurso() {
                     <div className={classes.paper}>
                         <PostulacionConcurso 
                             setOpen = {setOpenPostulacion}
+                            concursoId = {concursoId}
                         />
                     </div>
                 </Fade>

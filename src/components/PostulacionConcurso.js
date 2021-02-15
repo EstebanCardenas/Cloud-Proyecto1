@@ -34,8 +34,8 @@ export default function Register(props) {
     const [nombres, setNombres] = useState("")
     const [apellidos, setApellidos] = useState("")
     const [mail, setMail] = useState("")
-    const [pass, setPass] = useState("")
-    const [passConfirm, setPassConfirm] = useState("")
+    const [archivoVoz, setArchivoVoz] = useState("")
+    const [observaciones, setObservaciones] = useState("")
 
     function register(evt) {
         evt.preventDefault()
@@ -44,23 +44,16 @@ export default function Register(props) {
             alert("Introduce un correo válido")
             return
         }
-        if (pass !== passConfirm) {
-            alert("Las contraseñas no coinciden")
-            return
-        }
         //fetch
-        fetch('/api/register', {
+        fetch('/api/audio', {
             method: "POST",
             body: JSON.stringify({
-              email: mail,
-              password: pass,
-              nombres: nombres,
-              apellidos: apellidos,
+              files: {file: archivoVoz}
             })
         })
         .then(resp => {
             if (resp["status"] === 400) {
-                alert(`Registro fallido: el correo ya está registrado`)
+                alert(resp.msg)
             } else {
                 return resp.json()
             }
@@ -68,12 +61,41 @@ export default function Register(props) {
         .then(json => {
             if (json === undefined)
                 return
-            alert("Registro exitoso!")
-            props.setOpen(false)
+            alert("Voz guardada exitosamente!")
+            const archivo_id = json.id
+                //fetch
+                fetch('/api/voz', {
+                    method: "POST",
+                    body: JSON.stringify({
+                        email:mail,
+                        nombres:nombres,
+                        apellidos:apellidos,
+                        observaciones:observaciones,
+                        archivo_id:archivo_id,
+                        concurso_id:props.concursoId,
+                    })
+                })
+                .then(resp => {
+                    if (resp["status"] === 400) {
+                        alert(resp.msg)
+                    } else {
+                        return resp.json()
+                    }
+                })
+                .then(json => {
+                    if (json === undefined)
+                        return
+                    alert("Voz guardada exitosamente!")
+                    const archivo_id = json.id
+                })
+                .catch(err => {
+                    console.log(err)
+                    alert(`Voz n: ${err}`)
+                })
         })
         .catch(err => {
             console.log(err)
-            alert(`Registro fallido: ${err}`)
+            alert(`Voz n: ${err}`)
         })
     }
 
@@ -85,7 +107,7 @@ export default function Register(props) {
                     <LockOutlinedIcon />
                 </Avatar>
                 <Typography component="h1" variant="h5">
-                    Registro
+                    Postulación 
                 </Typography>
                 <form className={classes.form} onSubmit={register}>
                 <TextField
@@ -126,26 +148,13 @@ export default function Register(props) {
                     margin="normal"
                     required
                     fullWidth
-                    name="password"
-                    type="password"
-                    id="password"
-                    label="Contraseña"
-                    autoComplete="current-password"
-                    value={pass}
-                    onChange={evt => setPass(evt.target.value)}
-                />
-                <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="confirm"
-                    type="password"
-                    id="confirm"
-                    label="Confirmar Contraseña"
-                    autoComplete="current-password"
-                    value={passConfirm}
-                    onChange={evt => setPassConfirm(evt.target.value)}
+                    name="observaciones"
+                    type="observaciones"
+                    id="observaciones"
+                    label="Observaciones"
+                    autoComplete="current-observaciones"
+                    value={observaciones}
+                    onChange={evt => setObservaciones(evt.target.value)}
                 />
                 <Button
                     type="submit"
@@ -154,7 +163,7 @@ export default function Register(props) {
                     color="primary"
                     className={classes.submit}
                 >
-                    Registrarse
+                    Postularme
                 </Button>
                 </form>
             </div>
