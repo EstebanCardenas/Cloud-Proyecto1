@@ -1,7 +1,7 @@
 import random, string
 from datetime import datetime
 import os
-from flask import Flask, request, jsonify, json
+from flask import Flask, request, jsonify, json, send_file
 from flask_cors.extension import CORS
 from flask_praetorian import Praetorian, auth_required, current_user
 from werkzeug.utils import secure_filename
@@ -193,7 +193,7 @@ def concursoUrl(concurso_url):
 
 
 @app.route('/api/audio', methods=['POST'])
-def audio():
+def subir_audio():
     if 'file' not in request.files:
         return jsonify({"msg":"El archivo de audio es requerido"}),400
     file = request.files['file']
@@ -221,8 +221,25 @@ def audio():
     return jsonify({"msg":"Formato de archivo no soportado"}),400
 
 
+@app.route('/api/audio/<int:audio_id>', methods=['GET'])
+@auth_required
+def descargar_audio(audio_id):
+    archivo = ArchivoVoz.query.get_or_404(audio_id)
+    voz = archivo.voz
+    convertido = request.args.get('convertido') == '1'
+    if not voz or not archivo.archivo_original:
+        return jsonify({"msg":"Archivo de voz no encontrado"}),404
+    user = current_user()
+    if Concurso.query.get(voz.concurso_id).user_id != user.id:
+        return jsonify({"msg":"Debe ser el dueño del concurso en donde se subió \
+            este archivo de voz para descargarlo"}),403
+    if convertido and not archivo.convertido:
+        return jsonify({"msg":"El archivo de voz no se ha convertido"}),400
+    return send_file(archivo.archivo_convertido if convertido else archivo.archivo_original),200
+
+
 @app.route('/api/voz', methods=['POST'])
-def voz():
+def subir_voz():
     f_creacion = datetime.now()
     email = req.get('email', None)
     nombres = req.get('nombres',None)
@@ -246,7 +263,22 @@ def voz():
         concurso_id=concurso_id,
     )
     db.session.commit()
-    vozSchema.dump(voz)
+    return vozSchema.dump(voz),201
+
+
+@app.route('/api/concursos/<int:concurso_id>/voces', methods=['GET'])
+@auth_required
+def voces_concurso(concurso_id):
+    concurso = Concurso.query.get_or_404(concurso_id)
+    user = current_user()
+    if user.id != concurso.user_id:
+        return jsonify({"msg":"Debe ser el dueño del concurso para ver las voces"}),403
+    page = request.args.get('page')
+    page = int(page) if page else 1
+    voces_pag = Voz.query.filter_by(concurso_id=concurso_id).paginate(page=page,per_page=50)
+    voces = voces_pag.items
+    num_pags = voces_pag.pages
+    return jsonify({"voces":VocesSchema.dump(voces), "total_pags":num_pags}),200
 
 
 if __name__ == '__main__':
