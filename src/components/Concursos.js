@@ -300,9 +300,8 @@ export default function Concursos() {
                                     />
                                     </Grid>
                                     {/* Imagen */}
-                                    <Grid item xs={12} just>
-                                    <div> {content()}</div>
-                                    
+                                    <Grid item xs={12}>
+                                        <div> {content()}</div>
                                     </Grid>
                                     {/* Fecha Inicio */}
                                     <Grid item xs={12} sm={6}>
