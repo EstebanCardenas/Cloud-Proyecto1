@@ -30,7 +30,7 @@ guard.init_app(app, UserAdmin)
 
 with app.app_context():
     #Voz.__table__.drop(db.engine)
-    db.drop_all()
+    #db.drop_all()
     db.create_all()
 
 
