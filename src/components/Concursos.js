@@ -265,11 +265,12 @@ export default function Concursos() {
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                     <TextField
-                                        id='urlInput'
-                                        label='URL del concurso' 
+                                        id="url"
+                                        name ="url"
+                                        label="URL del concurso" 
                                         type='text' 
                                         fullWidth
-                                        autoComplete="family-name"
+                                        autoComplete="url-name"
                                         value={evtURLConcurso}
                                         onChange={evt => setEvtURLConcurso(evt.target.value)}
                                     />
@@ -393,7 +394,7 @@ export default function Concursos() {
                         evtId={evt.id}
 
                         nombre={evt.nombre}
-                        url_concurso={evt.url}
+                        url={evt.url}
                         imagen={evt.imagen}
                         guion={evt.guion}
                         recomendaciones={evt.recomendaciones}

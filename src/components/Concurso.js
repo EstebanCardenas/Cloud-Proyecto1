@@ -19,6 +19,7 @@ export default function Evento(props) {
     const [openEditar, setOpenEditar] = useState(false)
 
     const [evtNombre, setEvtNombre] = useState(props.nombre)
+    const [evtURLConcurso, setEvtURLConcurso] = useState(props.url)
     const [evtImagen, setEvtImagen] = useState(props.imagen)
     const [evtGuion, setEvtGuion] = useState(props.guion)
     const [evtRecomendaciones, setEvtRecomendaciones] = useState(props.recomendaciones)
@@ -86,6 +87,10 @@ export default function Evento(props) {
         if (evtNombre !== props.nombre) {
             newEvs[props.ind].nombre = evtNombre
             newEv["nombre"] = evtNombre
+        }
+        if (evtURLConcurso !== props.url) {
+            newEvs[props.ind].url = evtURLConcurso
+            newEv["url"] = evtURLConcurso
         }
         if (evtImagen64 !== props.imagen) {
             newEvs[props.ind].imagen = evtImagen64
@@ -372,8 +377,19 @@ export default function Evento(props) {
                                         onChange={evt => setEvtNombre(evt.target.value)}
                                     />
                                     </Grid>
-                                    {/* Imagen */}
                                     <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        id='url'
+                                        name='url'
+                                        label='URL del concurso'  
+                                        fullWidth
+                                        autoComplete="url-name"
+                                        value={evtURLConcurso}
+                                        onChange={evt => setEvtURLConcurso(evt.target.value)}
+                                    />
+                                    </Grid>
+                                    {/* Imagen */}
+                                    <Grid item xs={12}  style={{"marginTop": "30px", "marginBottom": "30px"}}>
                                         <ImageUploader 
                                             key='image-uploader'
                                             fileContainerStyle = {{height:'100px',width:'150px'}}
