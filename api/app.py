@@ -8,6 +8,8 @@ from werkzeug.utils import secure_filename
 #modelos
 from models import *
 from datetime import datetime
+import traceback
+
 
 UPLOAD_FOLDER = './originales/'
 ALLOWED_EXTENSIONS = {'wav','mp3', 'aac', 'm4a'}
@@ -19,6 +21,8 @@ app.config['JWT_REFRESH_LIFESPAN'] = {'days': 30}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['CONVERT_FOLDER'] = './convertidos/'
+app.config['BROKER_URL'] = 'redis://localhost:6379'
 
 CORS(app)
 guard = Praetorian()
@@ -27,6 +31,8 @@ guard = Praetorian()
 db.init_app(app)
 ma.init_app(app)
 guard.init_app(app, UserAdmin)
+celery.init_app(app)
+
 
 with app.app_context():
     #Voz.__table__.drop(db.engine)
@@ -103,8 +109,8 @@ def concursos():
         f_inicio = req.get('f_inicio', None)
         if f_inicio:
             f_inicio = datetime.fromisoformat(f_inicio)
-            if (f_inicio <= datetime.now()):
-                return jsonify({"msg": "La fecha de inicio es menor o igual a la fecha actual"}), 400
+            #if (f_inicio <= datetime.now()):
+            #    return jsonify({"msg": "La fecha de inicio es menor o igual a la fecha actual"}), 400
         f_fin = req.get('f_fin', None)
         if f_fin:
             f_fin = datetime.fromisoformat(f_fin)
@@ -209,14 +215,19 @@ def subir_audio():
         db.session.add(archivo_voz)
         db.session.commit()
         try:
-            directory = os.path.join(app.config['UPLOAD_FOLDER'],'{}/'.format(archivo_voz.id))
-            os.makedirs(directory)
-            path = os.path.join(directory,filename)
+            upload_directory = os.path.join(app.config['UPLOAD_FOLDER'],'{}/'.format(archivo_voz.id))
+            convert_directory = os.path.join(app.config['CONVERT_FOLDER'],'{}/'.format(archivo_voz.id))
+            os.makedirs(upload_directory, exist_ok=True)
+            os.makedirs(convert_directory, exist_ok=True)
+            path = os.path.join(upload_directory,filename)
+            convert_path = os.path.join(convert_directory,'{}.mp3'.format(os.path.splitext(filename)[0]))
             archivo_voz.archivo_original = path
+            archivo_voz.archivo_convertido = convert_path
             file.save(path)
             db.session.commit()
             return archivoVozSchema.dump(archivo_voz),201
         except:
+            traceback.print_exc()
             db.session.delete(archivo_voz)
             db.session.commit()
             return jsonify({"msg":"Error guardando el archivo"}),500
@@ -239,6 +250,7 @@ def descargar_audio(audio_id):
 @app.route('/api/voz', methods=['POST'])
 def subir_voz():
     f_creacion = datetime.now()
+    req = json.loads(request.data)
     email = req.get('email', None)
     nombres = req.get('nombres',None)
     apellidos = req.get('apellidos',None)
@@ -260,7 +272,9 @@ def subir_voz():
         archivo_id=archivo_id,
         concurso_id=concurso_id,
     )
+    db.session.add(voz)
     db.session.commit()
+    convertir_a_mp3.delay(str(archivo.id), archivo.archivo_original, archivo.archivo_convertido)
     return vozSchema.dump(voz),201
 
 
