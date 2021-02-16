@@ -154,6 +154,7 @@ export default function HomeConcurso({ match }) {
         if (Object.keys(concurso).length) {
             return (
                 <div>
+                    {/* HEADER */}
                     <Toolbar className={classes.toolbar}>
                     <Typography
                         component="h2"
@@ -166,16 +167,17 @@ export default function HomeConcurso({ match }) {
                         {concurso.nombre}
                     </Typography>
                     </Toolbar>
+                    {/* BANNER */}
                     <div style={{"textAlign": "center", "margin": "30px 0px"}}>
                         <img
                             src={`data:image/jpeg;base64,${imageBase64}`}
                             alt='Banner'
                         />
                     </div>
-                    
+                    {/* TABS */}
                     <div className={classes.root}>
                         <AppBar position="static">
-                            <Tabs value={tab} onChange={(ev, val) => setTab(val)} aria-label="tabs info concurso">
+                            <Tabs value={tab} onChange={(ev, val) => setTab(val)} aria-label="tabs info concurso" centered>
                                 <Tab label="Fechas" {...a11yProps(0)} />
                                 <Tab label="Valor a Pagar" {...a11yProps(1)} />
                                 <Tab label="Guión" {...a11yProps(2)} />
@@ -184,7 +186,7 @@ export default function HomeConcurso({ match }) {
                         </AppBar>
                         <div style={{"textAlign": "center"}}>
                             <TabPanel value={tab} index={0}>
-                                <b>Fecha de Inicio:</b> {concurso.f_inicio} | <b>Fecha de Fin:</b> {concurso.f_fin}
+                                <b>Fecha de Inicio:</b> {concurso.f_inicio.split("T")[0] + "/" + concurso.f_inicio.split("T")[1]} | <b>Fecha de Fin:</b> {concurso.f_fin.split("T")[0] + "/" + concurso.f_fin.split("T")[1]}
                             </TabPanel>
                             <TabPanel value={tab} index={1}>
                                 <b>${concurso.valor_paga} COP</b>
@@ -197,7 +199,7 @@ export default function HomeConcurso({ match }) {
                             </TabPanel>
                         </div>
                     </div>
-
+                    {/* POSTULACIÓN */}
                     <div style={{"textAlign": "center"}}>
                         <Button
                             variant="contained"
@@ -208,7 +210,7 @@ export default function HomeConcurso({ match }) {
                                 setConcursoId(concursoId)
                             }}
                         >
-                            {'Postularme concurso: ' + concursoId}
+                            Postularme
                         </Button>
                     </div>
                     <Modal
@@ -234,6 +236,7 @@ export default function HomeConcurso({ match }) {
                     <br></br>
                     <hr></hr>
                     <br></br>
+                    {/* AUDIOS */}
                     <ReactAudioPlayer
                         src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
                         onPlay={e => console.log("onPlay")}

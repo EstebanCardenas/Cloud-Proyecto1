@@ -203,10 +203,8 @@ def concurso(concurso_id):
 
 @app.route('/api/url/<string:concurso_url>', methods=['GET'])
 def concursoUrl(concurso_url):
-    now = datetime.now()
     print(concurso_url)
-    concurso = Concurso.query.filter_by(url=concurso_url).filter(Concurso.f_fin > now).first()
-    print(concurso)
+    concurso = Concurso.query.filter_by(url=concurso_url).first()
     if not concurso:
         return jsonify({"msg":"No existe ningún concurso activo con la url especificada"}),404
     return concursoSchema.dump(concurso),200
