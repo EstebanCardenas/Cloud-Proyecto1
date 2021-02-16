@@ -3,10 +3,15 @@ import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
+import Toolbar from '@material-ui/core/Toolbar';
+import AppBar from '@material-ui/core/AppBar';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
+import Box from '@material-ui/core/Box';
+import Typography from '@material-ui/core/Typography';
 import PostulacionConcurso from './PostulacionConcurso';
 import ReactAudioPlayer from 'react-audio-player';
 import ReactHowlerPlayer from 'react-howler-player';
-import NavBar from '../components/NavBar';
 
 import Button from '@material-ui/core/Button';
 
@@ -70,6 +75,21 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: theme.spacing(1),
         float: 'right'
     },
+    toolbar: {
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        backgroundColor: 'rgb(230,230,230)'
+    },
+    toolbarTitle: {
+        flex: 1,
+    },
+    toolbarSecondary: {
+        justifyContent: 'space-between',
+        overflowX: 'auto',
+    },
+    toolbarLink: {
+        padding: theme.spacing(1),
+        flexShrink: 0,
+    },
 }))
 
 export default function HomeConcurso({ match }) {
@@ -78,6 +98,34 @@ export default function HomeConcurso({ match }) {
     const [openPostulacion, setOpenPostulacion] = useState(false)
     const [concursoId, setConcursoId] = useState("")
     const [imageBase64, setImageBase64] = useState("")
+
+    //tabs
+    const [tab, setTab] = useState(0)
+    function a11yProps(index) {
+        return {
+          id: `simple-tab-${index}`,
+          'aria-controls': `simple-tabpanel-${index}`,
+        };
+    }
+    function TabPanel(props) {
+        const { children, value, index, ...other } = props;
+        
+        return (
+            <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            {...other}
+            >
+            {value === index && (
+                <Box p={3}>
+                <Typography>{children}</Typography>
+                </Box>
+            )}
+            </div>
+        );
+    }
 
     useEffect(() => {
         async function getConcurso(){
@@ -106,45 +154,86 @@ export default function HomeConcurso({ match }) {
         if (Object.keys(concurso).length) {
             return (
                 <div>
-                    <NavBar />
-                    <img
-                        src= {`data:image/jpeg;base64,${imageBase64}`}
-                        alt= 'Banner'
-                    />
-                    
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        className={classes.submit}
-                        onClick = {() => {
-                            setOpenPostulacion(true)
-                            setConcursoId(concursoId)
-                        }}
+                    <Toolbar className={classes.toolbar}>
+                    <Typography
+                        component="h2"
+                        variant="h5"
+                        color="inherit"
+                        align="center"
+                        noWrap
+                        className={classes.toolbarTitle}
                     >
-                        {'Postularme concurso: ' + concursoId}
-                    </Button>
+                        {concurso.nombre}
+                    </Typography>
+                    </Toolbar>
+                    <div style={{"textAlign": "center", "margin": "30px 0px"}}>
+                        <img
+                            src={`data:image/jpeg;base64,${imageBase64}`}
+                            alt='Banner'
+                        />
+                    </div>
+                    
+                    <div className={classes.root}>
+                        <AppBar position="static">
+                            <Tabs value={tab} onChange={(ev, val) => setTab(val)} aria-label="tabs info concurso">
+                                <Tab label="Fechas" {...a11yProps(0)} />
+                                <Tab label="Valor a Pagar" {...a11yProps(1)} />
+                                <Tab label="Guión" {...a11yProps(2)} />
+                                <Tab label="Recomendaciones" {...a11yProps(3)} />
+                            </Tabs>
+                        </AppBar>
+                        <div style={{"textAlign": "center"}}>
+                            <TabPanel value={tab} index={0}>
+                                <b>Fecha de Inicio:</b> {concurso.f_inicio} | <b>Fecha de Fin:</b> {concurso.f_fin}
+                            </TabPanel>
+                            <TabPanel value={tab} index={1}>
+                                <b>${concurso.valor_paga} COP</b>
+                            </TabPanel>
+                            <TabPanel value={tab} index={2}>
+                                {concurso.guion}
+                            </TabPanel>
+                            <TabPanel value={tab} index={3}>
+                                {concurso.recomendaciones}
+                            </TabPanel>
+                        </div>
+                    </div>
 
-                    <Modal
-                            aria-labelledby="transition-modal-login"
-                            className={classes.modal}
-                            open={openPostulacion}
-                            onClose={() => setOpenPostulacion(false)}
-                            closeAfterTransition
-                            BackdropComponent={Backdrop}
-                            BackdropProps={{
-                            timeout: 500,
+                    <div style={{"textAlign": "center"}}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            className={classes.submit}
+                            onClick = {() => {
+                                setOpenPostulacion(true)
+                                setConcursoId(concursoId)
                             }}
                         >
-                            <Fade in={openPostulacion}>
-                                <div className={classes.paper}>
-                                    <PostulacionConcurso 
-                                        setOpen = {setOpenPostulacion}
-                                        concursoId = {concursoId}
-                                    />
-                                </div>
-                            </Fade>
+                            {'Postularme concurso: ' + concursoId}
+                        </Button>
+                    </div>
+                    <Modal
+                        aria-labelledby="transition-modal-login"
+                        className={classes.modal}
+                        open={openPostulacion}
+                        onClose={() => setOpenPostulacion(false)}
+                        closeAfterTransition
+                        BackdropComponent={Backdrop}
+                        BackdropProps={{
+                        timeout: 500,
+                        }}
+                    >
+                        <Fade in={openPostulacion}>
+                            <div className={classes.paper}>
+                                <PostulacionConcurso 
+                                    setOpen = {setOpenPostulacion}
+                                    concursoId = {concursoId}
+                                />
+                            </div>
+                        </Fade>
                     </Modal>
+                    <br></br>
+                    <hr></hr>
+                    <br></br>
                     <ReactAudioPlayer
                         src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
                         onPlay={e => console.log("onPlay")}
