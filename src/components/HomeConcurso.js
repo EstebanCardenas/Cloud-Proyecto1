@@ -71,75 +71,83 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 
-export default function VisualizarConcurso() {
-    const classes = useStyles();
+export default function HomeConcurso({ match }) {
+    const classes = useStyles()
     const [concurso, setConcurso] = useState({})
     const [openPostulacion, setOpenPostulacion] = useState(false)
     const [concursoId, setConcursoId] = useState("")
 
     useEffect(() => {
         async function getConcurso(){
-            //const concurso_url = sessionStorage.getItem('concurso_url')
-            const concurso_url = 0
-            fetch('/api/url/'+concurso_url)
-            .then(resp => resp.json())
-            .then(json => {
+            const idx = match.url.search(/concurso/) + 9
+            const url = match.url.slice(idx)
+            const resp = await fetch(`/api/url/${url}`)
+            if (resp["status"] !== 200) {
+                alert("No se encontró un concurso con la url especificada")
+                return
+            } else {
+                const json = await resp.json()
+                setConcurso(json)
                 console.log(json)
-                setConcurso({
-                    nombre : json.nombre,
-                    f_inicio : json.f_inicio,
-                    f_fin : json.f_fin,
-                    valor_paga : json.valor_paga,
-                    guion : json.guion,
-                    recomendaciones : json.recomendaciones
-                })
-            })
+            }
         }
         getConcurso()
-    })
+    }, [match.url])
 
-    return <div>
-        {[{concurso_id:'a'},{concurso_id:'b'},{concurso_id:'c'}].map(concurso => <Button
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    className={classes.submit}
-                    onClick = {() => {
-                        setOpenPostulacion(true)
-                        setConcursoId(concurso.concurso_id)
-                    }}
-                >
-                    {'Postularme concurso: ' + concurso.concurso_id}
-                </Button>)}
+    function renderConcurso() {
+        if (Object.keys(concurso).length) {
+            return (
+                <div>
+                    {[{concurso_id:'a'},{concurso_id:'b'},{concurso_id:'c'}].map((concurso,idx) => 
+                    <Button
+                        key={idx}
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        className={classes.submit}
+                        onClick = {() => {
+                            setOpenPostulacion(true)
+                            setConcursoId(concurso.concurso_id)
+                        }}
+                    >
+                        {'Postularme concurso: ' + concurso.concurso_id}
+                    </Button>)}
 
-        <Modal
-                aria-labelledby="transition-modal-login"
-                className={classes.modal}
-                open={openPostulacion}
-                onClose={() => setOpenPostulacion(false)}
-                closeAfterTransition
-                BackdropComponent={Backdrop}
-                BackdropProps={{
-                  timeout: 500,
-                }}
-            >
-                <Fade in={openPostulacion}>
-                    <div className={classes.paper}>
-                        <PostulacionConcurso 
-                            setOpen = {setOpenPostulacion}
-                            concursoId = {concursoId}
-                        />
-                    </div>
-                </Fade>
-        </Modal>
-        <ReactAudioPlayer
-                    src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
-                    onPlay={e => console.log("onPlay")}
-                    controls
-                />
-                <ReactHowlerPlayer 
-                    src={["https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"]}
-                    isDark = {true}
-                />
-</div>;
+                    <Modal
+                            aria-labelledby="transition-modal-login"
+                            className={classes.modal}
+                            open={openPostulacion}
+                            onClose={() => setOpenPostulacion(false)}
+                            closeAfterTransition
+                            BackdropComponent={Backdrop}
+                            BackdropProps={{
+                            timeout: 500,
+                            }}
+                        >
+                            <Fade in={openPostulacion}>
+                                <div className={classes.paper}>
+                                    <PostulacionConcurso 
+                                        setOpen = {setOpenPostulacion}
+                                        concursoId = {concursoId}
+                                    />
+                                </div>
+                            </Fade>
+                    </Modal>
+                    <ReactAudioPlayer
+                        src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+                        onPlay={e => console.log("onPlay")}
+                        controls
+                    />
+                    <ReactHowlerPlayer 
+                        src={["https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"]}
+                        isDark = {true}
+                    />
+                </div>
+            )
+        } else {
+            return (<div></div>)
+        }
+    }
+
+    return renderConcurso()
 }

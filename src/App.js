@@ -39,13 +39,7 @@ function App() {
           />
           <Concursos />
         </Route>
-        <Route path="/homeconcurso">
-          <NavBar
-            logged={logged}
-            setLogged={setLogged}
-          />
-          <HomeConcurso />
-        </Route>
+        <Route path="/home/concurso/:url" component={HomeConcurso} />
       </Switch>
     </Router>
   )
