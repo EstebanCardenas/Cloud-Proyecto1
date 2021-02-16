@@ -2,8 +2,7 @@ import './App.css';
 import {
   BrowserRouter as Router,
   Switch,
-  Route,
-  Link
+  Route
 } from "react-router-dom";
 import NavBar from './components/NavBar';
 import Home from './components/Home'
@@ -40,13 +39,7 @@ function App() {
           />
           <Concursos />
         </Route>
-        <Route path="/homeconcurso">
-          <NavBar
-            logged={logged}
-            setLogged={setLogged}
-          />
-          <HomeConcurso />
-        </Route>
+        <Route path="/home/concurso/:url" component={HomeConcurso} />
       </Switch>
     </Router>
   )

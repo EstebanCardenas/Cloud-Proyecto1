@@ -139,11 +139,15 @@ export default function Concursos() {
             alert("La fecha de inicio es mayor o igual a la de fin")
             return
         }
+        if (evtPago <= 0) {
+            alert("Introduce un valor de pago válido")
+            return
+        }
         //fetch
         const evtDatos = {
             nombre: evtNombre,
-            f_inicio: new Date(evtFechaInicio).getTime(),
-            f_fin: new Date(evtFechaFin).getTime(),
+            f_inicio: evtFechaInicio,
+            f_fin: evtFechaFin,
             valor_paga: evtPago,
             guion: evtGuion,
             recomendaciones: evtRecomendaciones
@@ -173,11 +177,11 @@ export default function Concursos() {
                 newArr.unshift({
                     id: json["id"],
                     nombre: evtNombre,
-                    url_concurso: evtURLConcurso,
+                    url: evtURLConcurso,
                     imagen: evtImagen,
                     guion: evtGuion,
                     recomendaciones: evtRecomendaciones,
-                    pago: evtPago,
+                    valor_paga: evtPago,
                     f_inicio: evtFechaInicio,
                     f_fin: evtFechaFin
                 })
@@ -367,17 +371,17 @@ export default function Concursos() {
                     <Evento
                         key={idx}
                         classes={classes}
-                        eventos={concursos}
-                        setEventos={setConcursos}
+                        concursos={concursos}
+                        setConcursos={setConcursos}
                         ind={idx}
                         evtId={evt.id}
 
                         nombre={evt.nombre}
-                        url_concurso={evt.url_concurso}
+                        url_concurso={evt.url}
                         imagen={evt.imagen}
                         guion={evt.guion}
                         recomendaciones={evt.recomendaciones}
-                        pago={evt.pago}
+                        valor_paga={evt.valor_paga}
                         f_inicio={evt.f_inicio}
                         f_fin={evt.f_fin}
                     />

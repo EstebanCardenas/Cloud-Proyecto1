@@ -1,7 +1,7 @@
 import random, string
 from datetime import datetime
 import os
-from flask import Flask, request, jsonify, json
+from flask import Flask, request, jsonify, json, send_file
 from flask_cors.extension import CORS
 from flask_praetorian import Praetorian, auth_required, current_user
 from werkzeug.utils import secure_filename
@@ -29,7 +29,8 @@ ma.init_app(app)
 guard.init_app(app, UserAdmin)
 
 with app.app_context():
-    #ArchivoVoz.__table__.drop(db.engine)
+    #Voz.__table__.drop(db.engine)
+    #db.drop_all()
     db.create_all()
 
 
@@ -99,12 +100,17 @@ def concursos():
     elif request.method == 'POST':
         req = json.loads(request.data)
         nombre = req.get('nombre', None)
-        f_inicio = datetime.fromtimestamp(req.get('f_inicio', None) / 1000.0)
-        if (f_inicio <= datetime.now()):
-            return jsonify({"msg": "La fecha de inicio es menor o igual a la fecha actual"}), 400
-        f_fin = datetime.fromtimestamp(req.get('f_fin', None) / 1000.0)
-        if f_inicio >= f_fin:
-            return jsonify({"msg": "La fecha de inicio es igual o mayor a la de fin"}), 400
+        f_inicio = req.get('f_inicio', None)
+        if f_inicio:
+            f_inicio = datetime.fromisoformat(f_inicio)
+            if (f_inicio <= datetime.now()):
+                return jsonify({"msg": "La fecha de inicio es menor o igual a la fecha actual"}), 400
+        f_fin = req.get('f_fin', None)
+        if f_fin:
+            f_fin = datetime.fromisoformat(f_fin)
+            if f_inicio:
+                if f_inicio >= f_fin:
+                    return jsonify({"msg": "La fecha de inicio es igual o mayor a la de fin"}), 400
         valor_paga = req.get('valor_paga',None)
         guion = req.get('guion',None)
         recomendaciones = req.get('recomendaciones',None)
@@ -141,25 +147,25 @@ def concurso(concurso_id):
     user = current_user()
     concurso = Concurso.query.get_or_404(concurso_id)
     if user.id != concurso.user_id:
-        return {"msg":"Solo se pueden acceder a concursos propios"},403
+        return {"msg":"Sólo se pueden acceder a concursos propios"},403
     if request.method == 'GET':
         return concursoSchema.dump(concurso)
     elif request.method == 'PUT':
-        req = request.get_json()
+        req = json.loads(request.data)
         nombre = req.get('nombre', None)
         f_inicio = req.get('f_inicio', None)
         f_fin = req.get('f_fin',None)
         valor_paga = req.get('valor_paga',None)
-        guion = req.get('valor_paga',None)
+        guion = req.get('guion',None)
         recomendaciones = req.get('recomendaciones',None)
         imagen = req.get('imagen_base64',None)
         url = req.get('url',None)
         if nombre:
             concurso.nombre = nombre
         if f_inicio:
-            concurso.f_inicio = datetime.strptime(f_inicio,'%Y-%m-%d %H:%M:%S')
+            concurso.f_inicio = datetime.fromisoformat(f_inicio)
         if f_fin:
-            concurso.f_fin = datetime.strptime(f_fin,'%Y-%m-%d %H:%M:%S')
+            concurso.f_fin = datetime.fromisoformat(f_fin)
         if valor_paga:
             concurso.valor_paga = valor_paga
         if guion:
@@ -181,14 +187,16 @@ def concurso(concurso_id):
 
 @app.route('/api/url/<string:concurso_url>', methods=['GET'])
 def concursoUrl(concurso_url):
-    concurso = db.session.query(Concurso).filter_by(url=url).first()
+    now = datetime.now()
+    print(concurso_url)
+    concurso = Concurso.query.filter_by(url=concurso_url).filter((Concurso.f_inicio <= now) & (Concurso.f_fin >= now)).first()
     if not concurso:
-        return jsonify({"msg":"No existe ningun concurso con la url especificada"}),404
+        return jsonify({"msg":"No existe ningún concurso activo con la url especificada"}),404
     return concursoSchema.dump(concurso),200
 
 
 @app.route('/api/audio', methods=['POST'])
-def audio():
+def subir_audio():
     if 'file' not in request.files:
         return jsonify({"msg":"El archivo de audio es requerido"}),400
     file = request.files['file']
@@ -216,8 +224,20 @@ def audio():
     return jsonify({"msg":"Formato de archivo no soportado"}),400
 
 
+@app.route('/api/audio/<int:audio_id>', methods=['GET'])
+def descargar_audio(audio_id):
+    archivo = ArchivoVoz.query.get_or_404(audio_id)
+    voz = archivo.voz
+    convertido = request.args.get('convertido') == '1'
+    if not voz or not archivo.archivo_original:
+        return jsonify({"msg":"Archivo de voz no encontrado"}),404
+    if convertido and not archivo.convertido:
+        return jsonify({"msg":"El archivo de voz no se ha convertido"}),400
+    return send_file(archivo.archivo_convertido if convertido else archivo.archivo_original),200
+
+
 @app.route('/api/voz', methods=['POST'])
-def voz():
+def subir_voz():
     f_creacion = datetime.now()
     email = req.get('email', None)
     nombres = req.get('nombres',None)
@@ -241,7 +261,37 @@ def voz():
         concurso_id=concurso_id,
     )
     db.session.commit()
-    vozSchema.dump(voz)
+    return vozSchema.dump(voz),201
+
+
+@app.route('/api/concursos/<int:concurso_id>/voces', methods=['GET'])
+@auth_required
+def voces_concurso(concurso_id):
+    concurso = Concurso.query.get_or_404(concurso_id)
+    user = current_user()
+    if user.id != concurso.user_id:
+        return jsonify({"msg":"Debe ser el dueño del concurso para ver las voces"}),403
+    page = request.args.get('page')
+    page = int(page) if page else 1
+    voces_pag = Voz.query.filter_by(concurso_id=concurso_id).order_by(desc(Voz.f_creacion)).paginate(page=page,per_page=50)
+    voces = voces_pag.items
+    num_pags = voces_pag.pages
+    return jsonify({"voces":vocesSchema.dump(voces), "total_pags":num_pags}),200
+
+
+@app.route('/api/url/<string:concurso_url>/voces', methods=['GET'])
+def voces_concurso_activo(concurso_url):
+    now = datetime.now()
+    concurso = Concurso.query.filter_by(url=concurso_url).filter((Concurso.f_inicio <= now) & (Concurso.f_fin >= now)).first()
+    if not concurso:
+        return jsonify({"msg":"No existe ningún concurso activo con la url especificada"}),404
+    page = request.args.get('page')
+    page = int(page) if page else 1
+    voces_pag = Voz.query.filter_by(concurso_id=concurso_id).filter(Voz.archivo_voz.has(convertido=True)).\
+        order_by(desc(Voz.f_creacion)).paginate(page=page,per_page=50)
+    voces = voces_pag.items
+    num_pags = voces_pag.pages
+    return jsonify({"voces":vocesSchemaSeguro.dump(voces), "total_pags":num_pags}),200
 
 
 if __name__ == '__main__':

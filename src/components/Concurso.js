@@ -20,7 +20,7 @@ export default function Evento(props) {
     const [evtImagen, setEvtImagen] = useState(props.imagen)
     const [evtGuion, setEvtGuion] = useState(props.guion)
     const [evtRecomendaciones, setEvtRecomendaciones] = useState(props.recomendaciones)
-    const [evtPago, setEvtPago] = useState(props.pago)
+    const [evtPago, setEvtPago] = useState(props.valor_paga)
     const [evtFechaInicio, setEvtFechaInicio] = useState(props.f_inicio)
     const [evtFechaFin, setEvtFechaFin] = useState(props.f_fin)
 
@@ -48,28 +48,37 @@ export default function Evento(props) {
 
     //funciones
     function eliminarFront() {
-        let newArr = [...props.eventos]
+        let newArr = [...props.concursos]
         let rmvIdx = (a, idx) => a.slice(0,idx).concat(a.slice(idx+1, a.length))
-        props.setEventos(rmvIdx(newArr, props.ind))
+        props.setConcursos(rmvIdx(newArr, props.ind))
     }
 
     function eliminar() {
-        const url = `/api/eventos/${props.evtId}`
+        const token = localStorage.getItem("access_token")
+        if (!token)
+            return
+        const url = `/api/concursos/${props.evtId}`
         fetch(url, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         })
-        .then(resp => resp.json())
-        .then(json => {
-            if (json["error"]) {
-                alert(`Error: ${json["error"]}`)
+        .then(resp => resp["status"])
+        .then(status => {
+            if (status !== 204) {
+                alert(`Error: No se pudo eliminar el concurso`)
                 return
             }
             eliminarFront()
         })
+        .catch(err => {
+            alert(`Error: ${err}`)
+        })
     }
 
-    function darEventosModificados() {
-        const newEvs = [...props.eventos]
+    function darConcursosModificados() {
+        const newEvs = [...props.concursos]
         const newEv = {}
         if (evtNombre !== props.nombre) {
             newEvs[props.ind].nombre = evtNombre
@@ -87,42 +96,74 @@ export default function Evento(props) {
             newEvs[props.ind].recomendaciones = evtRecomendaciones
             newEv["recomendaciones"] = evtRecomendaciones
         }
-        if (evtPago !== props.pago) {
-            newEvs[props.ind].pago = evtPago
-            newEv["pago"] = evtPago
+        if (evtPago !== props.valor_paga) {
+            if (evtPago <= 0) {
+                alert("Introduce un valor de pago válido")
+                return
+            }
+            newEvs[props.ind].valor_paga = evtPago
+            newEv["valor_paga"] = evtPago
         }
         if (evtFechaInicio !== props.f_inicio) {
+            let date = new Date(evtFechaInicio)
+            if (date <= new Date()) {
+                alert("La fecha de inicio es menor o igual a la fecha actual")
+                return
+            }
+            if (date >= new Date(evtFechaFin)) {
+                alert("La fecha de inicio es mayor o igual a la fecha de fin")
+                return
+            }
             newEvs[props.ind].f_inicio = evtFechaInicio
-            newEv["f_inicio"] = new Date(evtFechaInicio).getTime()
+            newEv["f_inicio"] = evtFechaInicio
         }
         if (evtFechaFin !== props.f_fin) {
+            if (new Date(evtFechaFin) <= new Date(evtFechaInicio)) {
+                alert("La fecha de fin es menor o igual a la de inicio")
+                return
+            }
             newEvs[props.ind].f_fin = evtFechaFin
-            newEv["f_fin"] = new Date(evtFechaFin).getTime()
+            newEv["f_fin"] = evtFechaFin
         }
         //Devolver modificado
         return Object.keys(newEv).length ? [newEvs, newEv] : []
     }
 
-    function editarEvento(evt) {
+    function editarConcurso(evt) {
         evt.preventDefault()
-        const mod = darEventosModificados()
+        const token = localStorage.getItem("access_token")
+        //validación
+        if (!token)
+            return
+        const mod = darConcursosModificados()
+        if (!mod)
+            return
+        //fetch
         if (mod.length) {
             const newEv = mod[1]
-            const uid = localStorage.getItem("id")
-            fetch(`/api/eventos/${uid}/${props.evtId}`, {
+            fetch(`/api/concursos/${props.evtId}`, {
                 method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(newEv)
             })
-            .then(resp => resp.json())
-            .then(json => {
-                if (json['error']) {
-                    alert(`Error: ${json['error']}`)
+            .then(resp => [resp.json(), resp["status"]])
+            .then(resp => {
+                const json = resp[0]
+                const status = resp[1]
+                if (status !== 200) {
+                    alert(`Error: ${json['msg']}`)
                     return
                 }
                 //actualizar front
-                props.setEventos(mod[0])
+                props.setConcursos(mod[0])
                 alert("Evento actualizado!")
                 setOpenEditar(false)
+            })
+            .catch(err => {
+                console.log(err)
+                alert(`Error: ${err}`)
             })
         } else {
             alert("No se ha modificado ningún atributo")
@@ -167,7 +208,7 @@ export default function Evento(props) {
                 >
                     <Fade in={openVer}>
                         <div className={props.classes.paper}>
-                            <h1 id="transition-modal-title">Detalles del Evento:</h1>
+                            <h1 id="transition-modal-title">Detalles del Concurso:</h1>
                             <div>
                                 <Grid container spacing={3}>
                                     {/* Nombre */}
@@ -271,7 +312,7 @@ export default function Evento(props) {
                                         label="Pago"
                                         type="number"
                                         required
-                                        value={props.pago}
+                                        value={props.valor_paga}
                                         InputProps={{
                                             readOnly: true,
                                         }}
@@ -299,8 +340,8 @@ export default function Evento(props) {
                 >
                     <Fade in={openEditar}>
                         <div className={props.classes.paper}>
-                        <h1 id="transition-modal-title">Editar Evento:</h1>
-                            <form onSubmit={editarEvento}>
+                        <h1 id="transition-modal-title">Editar Concurso:</h1>
+                            <form onSubmit={editarConcurso}>
                                 <div>
                                 <Grid container spacing={3}>
                                     {/* Nombre */}
