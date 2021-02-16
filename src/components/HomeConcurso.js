@@ -9,11 +9,15 @@ import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
+import Container from '@material-ui/core/Container';
+import Grid from '@material-ui/core/Grid';
+import Pagination from '@material-ui/lab/Pagination';
 import PostulacionConcurso from './PostulacionConcurso';
 import ReactAudioPlayer from 'react-audio-player';
 import ReactHowlerPlayer from 'react-howler-player';
 
 import Button from '@material-ui/core/Button';
+import { CssBaseline } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
     icon: {
@@ -95,9 +99,13 @@ const useStyles = makeStyles((theme) => ({
 export default function HomeConcurso({ match }) {
     const classes = useStyles()
     const [concurso, setConcurso] = useState({})
+    const [voces, setVoces] = useState([])
     const [openPostulacion, setOpenPostulacion] = useState(false)
     const [concursoId, setConcursoId] = useState("")
     const [imageBase64, setImageBase64] = useState("")
+    //paginación
+    const [pags, setPags] = useState(0)
+    const [page, setPage] = useState(1)
 
     //tabs
     const [tab, setTab] = useState(0)
@@ -128,27 +136,64 @@ export default function HomeConcurso({ match }) {
     }
 
     useEffect(() => {
-        async function getConcurso(){
+        async function getAll(){
+            //get url
             const idx = match.url.search(/concurso/) + 9
             const url = match.url.slice(idx)
-            const resp = await fetch(`/api/url/${url}`)
+            //get concurso
+            let resp = await fetch(`/api/url/${url}`)
             if (resp["status"] !== 200) {
                 alert("No se encontró un concurso con la url especificada")
                 return
-            } else {
-                const json = await resp.json()
-                setConcurso(json)
-                console.log(json)
-                setConcursoId(json.id)
-                //setImageBase64("data:image/jpeg;base64," + json.imagen_base64)
-                //setImageBase64(window.atob(json.image_base64))
-                //console.log(window.atob(json.image_base64))
             }
-            // const respaudio = await fetch(`/api/url/${url}/voces/`)
-            //     console.log(respaudio)
+            let json = await resp.json()
+            setConcurso(json)
+            console.log(json)
+            setConcursoId(json.id)
+            //setImageBase64("data:image/jpeg;base64," + json.imagen_base64)
+            //setImageBase64(window.atob(json.image_base64))
+            //console.log(window.atob(json.image_base64))
+
+            //get voces
+            resp = await fetch(`/api/url/${url}/voces`)
+            if (resp["status"] !== 200) {
+                alert("No se pudieron obtener las voces para el concurso")
+                return
+            }
+            json = await resp.json()
+            setPags(json["total_pags"])
         }
-        getConcurso()
+        getAll()
     }, [match.url])
+
+    function handlePagChange(evt,val) {
+        setPage(val)
+    }
+
+    function renderAudios() {
+        if (pags) {
+            return (
+                <div style={{
+                    "display": "flex",
+                    "justifyContent": "center",
+                    "marginTop": "20px"
+                }}>
+                    <Pagination count={pags} page={page} variant="outlined" color="primary" onChange={handlePagChange} showFirstButton showLastButton/>
+                </div>
+            )
+        } else {
+            return (
+                <div style={{
+                    "textAlign": "center",
+                    "marginTop": "30px",
+                    "fontFamily": "sans-serif",
+                    "fontWeight": "bold"
+                }}>
+                    Las entradas del concurso aparecerán aquí
+                </div>
+            )
+        }
+    }
 
     function renderConcurso() {
         if (Object.keys(concurso).length) {
@@ -158,7 +203,7 @@ export default function HomeConcurso({ match }) {
                     <Toolbar className={classes.toolbar}>
                     <Typography
                         component="h2"
-                        variant="h5"
+                        variant="h4"
                         color="inherit"
                         align="center"
                         noWrap
@@ -200,7 +245,7 @@ export default function HomeConcurso({ match }) {
                         </div>
                     </div>
                     {/* POSTULACIÓN */}
-                    <div style={{"textAlign": "center"}}>
+                    <div style={{"textAlign": "center", "marginTop": "20px"}}>
                         <Button
                             variant="contained"
                             color="primary"
@@ -234,10 +279,18 @@ export default function HomeConcurso({ match }) {
                         </Fade>
                     </Modal>
                     <br></br>
-                    <hr></hr>
-                    <br></br>
                     {/* AUDIOS */}
-                    <ReactAudioPlayer
+                    <Typography component="h1" variant="h4" align="center" color="textPrimary" gutterBottom style={{
+                        "backgroundColor": "rgb(63,81,181)",
+                        "padding": "20px 0px",
+                        "color": "rgb(255,255,255)",
+                        "fontFamily": "sans-serif",
+                        "marginTop": "20px"
+                    }}>
+                        ENTRADAS
+                    </Typography>
+                    {renderAudios()}
+                    {/* <ReactAudioPlayer
                         src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
                         onPlay={e => console.log("onPlay")}
                         controls
@@ -245,7 +298,7 @@ export default function HomeConcurso({ match }) {
                     <ReactHowlerPlayer 
                         src={["https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"]}
                         isDark = {true}
-                    />
+                    /> */}
                 </div>
             )
         } else {

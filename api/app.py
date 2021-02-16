@@ -312,8 +312,8 @@ def voces_concurso_activo(concurso_url):
         return jsonify({"msg":"No existe ningún concurso activo con la url especificada"}),404
     page = request.args.get('page')
     page = int(page) if page else 1
-    voces_pag = Voz.query.filter_by(concurso_id=concurso_id).filter(Voz.archivo_voz.has(convertido=True)).\
-        order_by(desc(Voz.f_creacion)).paginate(page=page,per_page=50)
+    voces_pag = Voz.query.filter_by(concurso_id=concurso.id).filter(Voz.archivo_voz.has(convertido=True)).\
+        order_by(Voz.f_creacion.desc()).paginate(page=page,per_page=50)
     voces = voces_pag.items
     num_pags = voces_pag.pages
     return jsonify({"voces":vocesSchemaSeguro.dump(voces), "total_pags":num_pags}),200
