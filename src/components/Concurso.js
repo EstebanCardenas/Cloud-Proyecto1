@@ -10,6 +10,7 @@ import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
 import { useState } from 'react';
 import TextField from '@material-ui/core/TextField';
+import Link from '@material-ui/core/Link';
 
 export default function Evento(props) {
     //hooks
@@ -173,12 +174,14 @@ export default function Evento(props) {
     return (
         <Grid item xs={12} sm={6} md={4}>
             <Card>
-            <CardHeader
-                title={props.nombre}
-                titleTypographyProps={{ align: 'center' }}
-                subheaderTypographyProps={{ align: 'center' }}
-                className={props.classes.classHeader}
-            />
+            <Link href={`/home/concurso/${props.url_concurso}`}>
+                <CardHeader
+                    title={props.nombre}
+                    titleTypographyProps={{ align: 'center' }}
+                    subheaderTypographyProps={{ align: 'center' }}
+                    className={props.classes.cardHeader}
+                />
+            </Link>
             <CardContent>
                 {/* <Typography variant="h6">
                     <b>Categoría:</b> {props.categoria[0].toUpperCase() + props.categoria.slice(1).toLowerCase()}

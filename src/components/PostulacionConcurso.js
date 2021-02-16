@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -7,6 +7,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import {useDropzone} from 'react-dropzone';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -28,75 +29,59 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 
+const allowedAudioFileTypes = ['audio/mpeg','audio/wav','audio/mp3','audio/ogg']
+
 export default function Register(props) {
     const classes = useStyles()
 
     const [nombres, setNombres] = useState("")
     const [apellidos, setApellidos] = useState("")
     const [mail, setMail] = useState("")
-    const [archivoVoz, setArchivoVoz] = useState("")
+    const [archivoVoz, setArchivoVoz] = useState(null)
     const [observaciones, setObservaciones] = useState("")
 
-    function register(evt) {
+    const onDrop = useCallback(acceptedFiles => {
+        console.log(acceptedFiles)
+        if (allowedAudioFileTypes.includes(acceptedFiles[0].type)){
+            setArchivoVoz(acceptedFiles[0])
+        }
+        else{
+            alert('Formato de archivo no permitido: ' + acceptedFiles[0].type)
+        }
+      }, [])
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
+
+    async function register(evt) {
         evt.preventDefault()
         //validación
         if (!mail.includes('@')) {
             alert("Introduce un correo válido")
             return
         }
-        //fetch
-        fetch('/api/audio', {
+        // fetch envio audio
+        var data = new FormData()
+        data.append('file', archivoVoz)
+        const response = await fetch('/api/audio', {
             method: "POST",
-            body: JSON.stringify({
-              files: {file: archivoVoz}
-            })
+            body: data
         })
-        .then(resp => {
-            if (resp["status"] === 400) {
-                alert(resp.msg)
-            } else {
-                return resp.json()
-            }
-        })
-        .then(json => {
-            if (json === undefined)
-                return
-            alert("Voz guardada exitosamente!")
-            const archivo_id = json.id
-                //fetch
-                fetch('/api/voz', {
+        const body = await response.json()
+        console.log(body)
+        // fetch crear registro base de datos
+        const response2 = await fetch('/api/voz', {
                     method: "POST",
                     body: JSON.stringify({
                         email:mail,
                         nombres:nombres,
                         apellidos:apellidos,
                         observaciones:observaciones,
-                        archivo_id:archivo_id,
+                        archivo_id:body.id,
                         concurso_id:props.concursoId,
                     })
                 })
-                .then(resp => {
-                    if (resp["status"] === 400) {
-                        alert(resp.msg)
-                    } else {
-                        return resp.json()
-                    }
-                })
-                .then(json => {
-                    if (json === undefined)
-                        return
-                    alert("Voz guardada exitosamente!")
-                    const archivo_id = json.id
-                })
-                .catch(err => {
-                    console.log(err)
-                    alert(`Voz n: ${err}`)
-                })
-        })
-        .catch(err => {
-            console.log(err)
-            alert(`Voz n: ${err}`)
-        })
+
+                const body2 = await response2.json()
+                console.log(body2)
     }
 
     return (
@@ -156,6 +141,20 @@ export default function Register(props) {
                     value={observaciones}
                     onChange={evt => setObservaciones(evt.target.value)}
                 />
+                <div {...getRootProps()}>
+                    <input {...getInputProps()} />
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        className={classes.submit}
+                    >
+                        Subir voz
+                    </Button>
+                </div>
+                {archivoVoz && <div>
+                    {archivoVoz.name}
+                    </div>}
                 <Button
                     type="submit"
                     fullWidth

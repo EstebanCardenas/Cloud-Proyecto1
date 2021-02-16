@@ -39,6 +39,10 @@ const useStyles = makeStyles((theme) => ({
     cardContent: {
         flexGrow: 1,
     },
+    cardHeader: {
+        backgroundColor:
+          theme.palette.type === 'light' ? theme.palette.grey[200] : theme.palette.grey[700],
+    },
     footer: {
         backgroundColor: theme.palette.background.paper,
         padding: theme.spacing(6),
@@ -82,6 +86,7 @@ export default function Concursos() {
     const [evtNombre, setEvtNombre] = useState("")
     const [evtURLConcurso, setEvtURLConcurso] = useState("")
     const [evtImagen, setEvtImagen] = useState("")
+    const [evtImagen64, setEvtImagen64] = useState("")
     const [evtGuion, setEvtGuion] = useState("")
     const [evtRecomendaciones, setEvtRecomendaciones] = useState("")
     const [evtPago, setEvtPago] = useState("")
@@ -123,6 +128,17 @@ export default function Concursos() {
         }
     }, [])
 
+    function convertirBase64(archivo) {
+        console.log(archivo)
+        var reader = new FileReader();
+        reader.readAsDataURL(archivo[0]);
+        reader.onload=function(){
+            var base64 = reader.result;
+            //console.log(base64)
+            setEvtImagen64(base64)
+        }
+    }
+
     function crearConcurso(evt) {
         evt.preventDefault()
         const token = localStorage.getItem("access_token")
@@ -152,8 +168,8 @@ export default function Concursos() {
             guion: evtGuion,
             recomendaciones: evtRecomendaciones
         }
-        if (evtImagen !== '')
-            evtDatos["imagen"] = evtImagen
+        if (evtImagen64 !== '')
+            evtDatos["imagen_base64"] = evtImagen64
         if (evtURLConcurso !== '')
             evtDatos["url"] = evtURLConcurso
         const url = `/api/concursos`
@@ -268,7 +284,7 @@ export default function Concursos() {
                                             withPreview={true}
                                             label='Máximo tamaño 5MB'
                                             buttonText='Selecciona la imagen del concurso'
-                                            onChange={event=>console.log(event)}
+                                            onChange={event=>convertirBase64(event)}
                                             imgExtension={['.jpg','.png','.jpeg']}
                                             maxFileSize={5242880}>
                                         </ImageUploader>

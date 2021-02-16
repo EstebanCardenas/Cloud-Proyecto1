@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 from models import *
 from datetime import datetime
 import traceback
-
+import base64
 
 UPLOAD_FOLDER = './originales/'
 ALLOWED_EXTENSIONS = {'wav','mp3', 'aac', 'm4a'}
@@ -120,7 +120,11 @@ def concursos():
         valor_paga = req.get('valor_paga',None)
         guion = req.get('guion',None)
         recomendaciones = req.get('recomendaciones',None)
-        imagen = req.get('imagen',None)
+        print('reqprint', req)
+        imagen = req.get('imagen_base64',None)
+        if imagen:
+            data_bytes = imagen.encode("utf-8")
+            imagen = base64.b64encode(data_bytes)
         url = req.get('url',None)
         if not nombre or not f_inicio or not f_fin or \
             not valor_paga or not guion or not recomendaciones:
@@ -195,7 +199,7 @@ def concurso(concurso_id):
 def concursoUrl(concurso_url):
     now = datetime.now()
     print(concurso_url)
-    concurso = Concurso.query.filter_by(url=concurso_url).filter((Concurso.f_inicio <= now) & (Concurso.f_fin >= now)).first()
+    concurso = Concurso.query.filter_by(url=concurso_url).filter((Concurso.f_inicio >= now) & (Concurso.f_fin <= now)).first()
     if not concurso:
         return jsonify({"msg":"No existe ningún concurso activo con la url especificada"}),404
     return concursoSchema.dump(concurso),200
@@ -203,6 +207,7 @@ def concursoUrl(concurso_url):
 
 @app.route('/api/audio', methods=['POST'])
 def subir_audio():
+    print(request.files)
     if 'file' not in request.files:
         return jsonify({"msg":"El archivo de audio es requerido"}),400
     file = request.files['file']
