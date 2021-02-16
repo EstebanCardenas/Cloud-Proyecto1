@@ -39,6 +39,10 @@ const useStyles = makeStyles((theme) => ({
     cardContent: {
         flexGrow: 1,
     },
+    cardHeader: {
+        backgroundColor:
+          theme.palette.type === 'light' ? theme.palette.grey[200] : theme.palette.grey[700],
+    },
     footer: {
         backgroundColor: theme.palette.background.paper,
         padding: theme.spacing(6),
