@@ -117,8 +117,9 @@ def concursos():
         recomendaciones = req.get('recomendaciones',None)
         print('reqprint', req)
         imagen = req.get('imagen_base64',None)
-        data_bytes = imagen.encode("utf-8")
-        imagen = base64.b64encode(data_bytes)
+        if imagen:
+            data_bytes = imagen.encode("utf-8")
+            imagen = base64.b64encode(data_bytes)
         url = req.get('url',None)
         if not nombre or not f_inicio or not f_fin or \
             not valor_paga or not guion or not recomendaciones:
