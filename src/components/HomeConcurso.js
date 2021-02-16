@@ -205,7 +205,7 @@ export default function HomeConcurso({ match }) {
                     "fontFamily": "sans-serif",
                     "fontWeight": "bold"
                 }}>
-                    Las entradas del concurso aparecerán aquí
+                    Las entradas del concurso aparecerán aquí cuando sean convertidas
                 </div>
             )
         }

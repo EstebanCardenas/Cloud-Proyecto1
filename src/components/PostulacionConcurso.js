@@ -78,12 +78,12 @@ export default function Register(props) {
         }
         console.log(data2)
         const response2 = await fetch('/api/voz', {
-                    method: "POST",
-                    body: JSON.stringify(data2)
-                })
+            method: "POST",
+            body: JSON.stringify(data2)
+        })
 
-                const body2 = await response2.json()
-                console.log(body2)
+        const body2 = await response2.json()
+        console.log(body2)
     }
 
     return (
