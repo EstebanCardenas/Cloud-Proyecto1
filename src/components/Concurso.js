@@ -192,7 +192,7 @@ export default function Evento(props) {
     return (
         <Grid item xs={12} sm={6} md={4}>
             <Card>
-            <Link href={`/home/concurso/${props.url_concurso}`}>
+            <Link href={`/home/concurso/${props.url}`}>
                 <CardHeader
                     title={props.nombre}
                     titleTypographyProps={{ align: 'center' }}
