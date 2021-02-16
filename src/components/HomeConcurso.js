@@ -99,7 +99,7 @@ const useStyles = makeStyles((theme) => ({
 export default function HomeConcurso({ match }) {
     const classes = useStyles()
     const [concurso, setConcurso] = useState({})
-    const [voces, setVoces] = useState([])
+    const [audios, setAudios] = useState([])
     const [openPostulacion, setOpenPostulacion] = useState(false)
     const [concursoId, setConcursoId] = useState("")
     const [imageBase64, setImageBase64] = useState("")
@@ -140,6 +140,7 @@ export default function HomeConcurso({ match }) {
             //get url
             const idx = match.url.search(/concurso/) + 9
             const url = match.url.slice(idx)
+
             //get concurso
             let resp = await fetch(`/api/url/${url}`)
             if (resp["status"] !== 200) {
@@ -161,7 +162,22 @@ export default function HomeConcurso({ match }) {
                 return
             }
             json = await resp.json()
-            setPags(json["total_pags"])
+            if (json["total_pags"]) {
+                const voces = json["voces"]
+                //get audios
+                const audios = []
+                voces.forEach( async voz => {
+                    let url = new URL(`/api/audio/${voz.archivo_id}`)
+                    url.searchParams.append('convertido', 1)
+                    resp = await fetch(url)
+                    if (resp === 200) {
+                        json = await resp.json()
+                        console.log(json)
+                    }
+                })
+                setPags(audios.length)
+                setAudios(audios)
+            }
         }
         getAll()
     }, [match.url])
