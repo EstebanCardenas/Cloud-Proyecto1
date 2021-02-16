@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 #modelos
 from models import *
 from datetime import datetime
+import base64
 
 UPLOAD_FOLDER = './originales/'
 ALLOWED_EXTENSIONS = {'wav','mp3', 'aac', 'm4a'}
@@ -114,7 +115,10 @@ def concursos():
         valor_paga = req.get('valor_paga',None)
         guion = req.get('guion',None)
         recomendaciones = req.get('recomendaciones',None)
-        imagen = req.get('imagen',None)
+        print('reqprint', req)
+        imagen = req.get('imagen_base64',None)
+        data_bytes = imagen.encode("utf-8")
+        imagen = base64.b64encode(data_bytes)
         url = req.get('url',None)
         if not nombre or not f_inicio or not f_fin or \
             not valor_paga or not guion or not recomendaciones:
