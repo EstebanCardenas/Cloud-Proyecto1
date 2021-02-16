@@ -6,6 +6,7 @@ import Fade from '@material-ui/core/Fade';
 import PostulacionConcurso from './PostulacionConcurso';
 import ReactAudioPlayer from 'react-audio-player';
 import ReactHowlerPlayer from 'react-howler-player';
+import NavBar from '../components/NavBar';
 
 import Button from '@material-ui/core/Button';
 
@@ -76,6 +77,7 @@ export default function HomeConcurso({ match }) {
     const [concurso, setConcurso] = useState({})
     const [openPostulacion, setOpenPostulacion] = useState(false)
     const [concursoId, setConcursoId] = useState("")
+    const [imageBase64, setImageBase64] = useState("")
 
     useEffect(() => {
         async function getConcurso(){
@@ -89,7 +91,13 @@ export default function HomeConcurso({ match }) {
                 const json = await resp.json()
                 setConcurso(json)
                 console.log(json)
+                setConcursoId(json.id)
+                //setImageBase64("data:image/jpeg;base64," + json.imagen_base64)
+                //setImageBase64(window.atob(json.image_base64))
+                //console.log(window.atob(json.image_base64))
             }
+            // const respaudio = await fetch(`/api/url/${url}/voces/`)
+            //     console.log(respaudio)
         }
         getConcurso()
     }, [match.url])
@@ -98,20 +106,24 @@ export default function HomeConcurso({ match }) {
         if (Object.keys(concurso).length) {
             return (
                 <div>
-                    {[{concurso_id:'a'},{concurso_id:'b'},{concurso_id:'c'}].map((concurso,idx) => 
+                    <NavBar />
+                    <img
+                        src= {`data:image/jpeg;base64,${imageBase64}`}
+                        alt= 'Banner'
+                    />
+                    
                     <Button
-                        key={idx}
                         fullWidth
                         variant="contained"
                         color="primary"
                         className={classes.submit}
                         onClick = {() => {
                             setOpenPostulacion(true)
-                            setConcursoId(concurso.concurso_id)
+                            setConcursoId(concursoId)
                         }}
                     >
-                        {'Postularme concurso: ' + concurso.concurso_id}
-                    </Button>)}
+                        {'Postularme concurso: ' + concursoId}
+                    </Button>
 
                     <Modal
                             aria-labelledby="transition-modal-login"

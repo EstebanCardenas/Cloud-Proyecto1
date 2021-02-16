@@ -201,6 +201,7 @@ def concursoUrl(concurso_url):
 
 @app.route('/api/audio', methods=['POST'])
 def subir_audio():
+    print(request.files)
     if 'file' not in request.files:
         return jsonify({"msg":"El archivo de audio es requerido"}),400
     file = request.files['file']
