@@ -1,8 +1,54 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from flask import has_app_context
+from celery import Celery
+import subprocess
 
+class FlaskCelery(Celery):
+
+    def __init__(self, *args, **kwargs):
+
+        super(FlaskCelery, self).__init__(*args, **kwargs)
+        self.patch_task()
+
+        if 'app' in kwargs:
+            self.init_app(kwargs['app'])
+
+    def patch_task(self):
+        TaskBase = self.Task
+        _celery = self
+
+        class ContextTask(TaskBase):
+            abstract = True
+
+            def __call__(self, *args, **kwargs):
+                if has_app_context():
+                    return TaskBase.__call__(self, *args, **kwargs)
+                else:
+                    with _celery.app.app_context():
+                        return TaskBase.__call__(self, *args, **kwargs)
+
+        self.Task = ContextTask
+
+    def init_app(self, app):
+        self.app = app
+        self.config_from_object(app.config)
+
+
+celery = FlaskCelery()
 db = SQLAlchemy()
 ma = Marshmallow()
+
+
+@celery.task
+def convertir_a_mp3(archivo_id, path_origen, path_destino):
+    proc = subprocess.Popen(['ffmpeg', '-i', path_origen, path_destino])
+    proc.wait()
+    archivo = ArchivoVoz.query.get(int(archivo_id))
+    archivo.convertido = True
+    db.session.commit()
+    print("funcionó?")
+
 
 #Usuario admin
 class UserAdmin(db.Model):
@@ -110,7 +156,7 @@ class ArchivoVoz(db.Model):
 
 class ArchivoVozSchema(ma.Schema):
     class Meta:
-        fields = ("id", "convertido","archivo_original")
+        fields = ("id", "convertido","archivo_original", "archivo_convertido")
 
 
 archivoVozSchema = ArchivoVozSchema()
