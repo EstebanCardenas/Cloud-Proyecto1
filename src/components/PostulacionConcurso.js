@@ -68,16 +68,18 @@ export default function Register(props) {
         const body = await response.json()
         console.log(body)
         // fetch crear registro base de datos
+        const data2 = {
+            email:mail,
+            nombres:nombres,
+            apellidos:apellidos,
+            observaciones:observaciones,
+            archivo_id:body.id,
+            concurso_id:props.concursoId,
+        }
+        console.log(data2)
         const response2 = await fetch('/api/voz', {
                     method: "POST",
-                    body: JSON.stringify({
-                        email:mail,
-                        nombres:nombres,
-                        apellidos:apellidos,
-                        observaciones:observaciones,
-                        archivo_id:body.id,
-                        concurso_id:props.concursoId,
-                    })
+                    body: JSON.stringify(data2)
                 })
 
                 const body2 = await response2.json()
