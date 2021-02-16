@@ -11,6 +11,7 @@ import Fade from '@material-ui/core/Fade';
 import { useState } from 'react';
 import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
+import ImageUploader from 'react-images-upload';
 
 export default function Evento(props) {
     //hooks
@@ -28,6 +29,7 @@ export default function Evento(props) {
     const [progress, setProgress] = useState('getUpload')
     const [url, setImageURL] = useState(undefined)
     const [errorMessage, setErrorMessage] = useState('')
+    const [evtImagen64, setEvtImagen64] = useState("")
 
     const content = () => {
         switch(progress){
@@ -85,9 +87,9 @@ export default function Evento(props) {
             newEvs[props.ind].nombre = evtNombre
             newEv["nombre"] = evtNombre
         }
-        if (evtImagen !== props.imagen) {
-            newEvs[props.ind].imagen = evtImagen
-            newEv["imagen"] = evtImagen
+        if (evtImagen64 !== props.imagen) {
+            newEvs[props.ind].imagen = evtImagen64
+            newEv["imagen_base64"] = evtImagen64
         }
         if (evtGuion !== props.guion) {
             newEvs[props.ind].guion = evtGuion
@@ -128,6 +130,17 @@ export default function Evento(props) {
         }
         //Devolver modificado
         return Object.keys(newEv).length ? [newEvs, newEv] : []
+    }
+
+    function convertirBase64(archivo) {
+        console.log(archivo)
+        var reader = new FileReader();
+        reader.readAsDataURL(archivo[0]);
+        reader.onload=function(){
+            var base64 = reader.result;
+            console.log(base64)
+            setEvtImagen64(base64)
+        }
     }
 
     function editarConcurso(evt) {
@@ -361,15 +374,18 @@ export default function Evento(props) {
                                     </Grid>
                                     {/* Imagen */}
                                     <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        id="imagen"
-                                        name="imagen"
-                                        label="Imagen"
-                                        fullWidth
-                                        autoComplete="family-name"
-                                        value={evtImagen}
-                                        onChange={evt => setEvtImagen(evt.target.value)}
-                                    />
+                                        <ImageUploader 
+                                            key='image-uploader'
+                                            fileContainerStyle = {{height:'100px',width:'150px'}}
+                                            withIcon={true}
+                                            singleImage={true}
+                                            withPreview={true}
+                                            label='Máximo tamaño 5MB'
+                                            buttonText='Selecciona la imagen del concurso'
+                                            onChange={event=>convertirBase64(event)}
+                                            imgExtension={['.jpg','.png','.jpeg']}
+                                            maxFileSize={5242880}>
+                                        </ImageUploader>
                                     </Grid>
                                     {/* Fecha Inicio */}
                                     <Grid item xs={12} sm={6}>
