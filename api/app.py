@@ -191,6 +191,8 @@ def concurso(concurso_id):
         if url:
             if Concurso.query.filter_by(url=url).count() > 0:
                 return jsonify({"msg":"la url ya está en uso"}),400
+            else:
+                concurso.url = url
         db.session.commit()
         return concursoSchema.dump(concurso),200
     else:

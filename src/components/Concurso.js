@@ -32,23 +32,7 @@ export default function Evento(props) {
     const [errorMessage, setErrorMessage] = useState('')
     const [evtImagen64, setEvtImagen64] = useState("")
 
-    const content = () => {
-        switch(progress){
-            case 'getUpload':
-                return <div>Please upload an image</div>
-            case 'uploading':
-                return <div>Uploading</div>
-            case 'uploaded':
-                return <img src={url} alt='uploaded' />
-            case 'uploadError':
-                return (
-                    <>
-                        <div>Error message = {errorMessage}</div>
-                        <div>Please upload an image</div>
-                    </>
-                )
-        }
-    }
+    
 
     //funciones
     function eliminarFront() {
@@ -239,6 +223,19 @@ export default function Evento(props) {
                                         name="ver-nombre"
                                         label="Nombre"
                                         value={props.nombre}
+                                        fullWidth
+                                        InputProps={{
+                                            readOnly: true,
+                                        }}
+                                    />
+                                    </Grid>
+                                    {/* URL */}
+                                    <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        id="ver-url"
+                                        name="ver-url"
+                                        label="URL del concurso"
+                                        value={props.url}
                                         fullWidth
                                         InputProps={{
                                             readOnly: true,
