@@ -94,7 +94,7 @@ def register():
         return {"msg": "usuario creado"}, 201
 
     else:
-        return {"msg": "El email ya está registrado"}, 400
+        return {"msg": "El email ya esta registrado"}, 400
 
 
 @app.route('/api/concursos', methods=['GET','POST'])
@@ -131,7 +131,7 @@ def concursos():
             return jsonify({"msg": "Formulario incompleto"}), 400
         if url:
             if db.session.query(Concurso).filter_by(url=url).count() > 0:
-                return jsonify({"msg": "El url ya está usado"}), 400
+                return jsonify({"msg": "El url ya esta en uso"}), 400
         else:
             url = generate_url()
 
@@ -157,7 +157,7 @@ def concurso(concurso_id):
     user = current_user()
     concurso = Concurso.query.get_or_404(concurso_id)
     if user.id != concurso.user_id:
-        return {"msg":"Sólo se pueden acceder a concursos propios"},403
+        return {"msg":"Solo se pueden acceder a concursos propios"},403
     if request.method == 'GET':
         return concursoSchema.dump(concurso)
     elif request.method == 'PUT':
@@ -190,7 +190,7 @@ def concurso(concurso_id):
             concurso.imagen_base64 = imagen
         if url:
             if Concurso.query.filter_by(url=url).count() > 0:
-                return jsonify({"msg":"la url ya está en uso"}),400
+                return jsonify({"msg":"la url ya esta en uso"}),400
             else:
                 concurso.url = url
         db.session.commit()
@@ -207,7 +207,7 @@ def concursoUrl(concurso_url):
     print(concurso_url)
     concurso = Concurso.query.filter_by(url=concurso_url).filter(Concurso.f_fin > now).first()
     if not concurso:
-        return jsonify({"msg":"No existe ningún concurso activo con la url especificada"}),404
+        return jsonify({"msg":"No existe ningun concurso activo con la url especificada"}),404
     return concursoSchema.dump(concurso),200
 
 
@@ -309,7 +309,7 @@ def voces_concurso_activo(concurso_url):
     now = datetime.now()
     concurso = Concurso.query.filter_by(url=concurso_url).filter(Concurso.f_fin > now).first()
     if not concurso:
-        return jsonify({"msg":"No existe ningún concurso activo con la url especificada"}),404
+        return jsonify({"msg":"No existe ningun concurso activo con la url especificada"}),404
     page = request.args.get('page')
     page = int(page) if page else 1
     voces_pag = Voz.query.filter_by(concurso_id=concurso.id).filter(Voz.archivo_voz.has(convertido=True)).\
