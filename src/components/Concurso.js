@@ -184,17 +184,6 @@ export default function Evento(props) {
                     className={props.classes.cardHeader}
                 />
             </Link>
-            <CardContent>
-                {/* <Typography variant="h6">
-                    <b>Categoría:</b> {props.categoria[0].toUpperCase() + props.categoria.slice(1).toLowerCase()}
-                </Typography>
-                <Typography variant="h6">
-                    <b>Imagen:</b> {props.imagen[0].toUpperCase() + props.imagen.slice(1).toLowerCase()}
-                </Typography> */}
-                <Typography variant="h6">
-                    <b>Nombre:</b> {props.nombre[0].toUpperCase() + props.nombre.slice(1).toLowerCase()}
-                </Typography>
-            </CardContent>
             <CardActions>
                 {/* Modal Ver */}
                 <Button size="small" color="primary" onClick={() => setOpenVer(true)}>
@@ -314,7 +303,7 @@ export default function Evento(props) {
                                         }}
                                     />
                                     </Grid>
-                                    <Grid item xs={12} sm={2}>
+                                    <Grid item xs={12} sm={2} style={{"display": "flex", "flexWrap": "wrap"}}>
                                     {/* Pago */}
                                     <TextField
                                         id="ver-pago"

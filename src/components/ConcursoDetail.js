@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import ReactAudioPlayer from 'react-audio-player';
+import Grid from '@material-ui/core/Grid';
+import Entrada from './Entrada';
 
 export default function ConcursoDetail({match}) {
     //state
@@ -68,19 +69,38 @@ export default function ConcursoDetail({match}) {
         getAll()
     }, [match, page])
 
+    function renderVoces() {
+        if (voces.length) {
+            return (
+                <div>
+                    <Grid container spacing={3} style={{"margin": "20px 20px"}}>
+                        {voces.map((voz,idx) => {
+                            return(
+                                <Grid item xs={12} sm={4} key={idx}>
+                                    <Entrada
+                                        voz={voz}
+                                    />
+                                </Grid>
+                            )
+                        })}
+                    </Grid>
+                </div>
+            )
+        }
+        return (
+            <div style={{
+                "display": "flex",
+                "justifyContent": "center",
+                "alignItems": "center"
+            }}>
+                <b>Aún no hay entradas para el concurso</b>
+            </div>
+        )
+    }
+
     return (
         <div>
-            {voces.length ?
-                voces.map((voz,idx) => {
-                    return (
-                        <ReactAudioPlayer
-                            key={idx}
-                            src = {window.URL.createObjectURL(voz.original)}
-                            controls
-                        />
-                    )
-                })
-            : ""}
+            {renderVoces()}
         </div>
     )
 }
