@@ -396,7 +396,7 @@ export default function Concursos() {
 
                         nombre={evt.nombre}
                         url={evt.url}
-                        imagen={evt.imagen}
+                        imagen={evt.imagen_base64}
                         guion={evt.guion}
                         recomendaciones={evt.recomendaciones}
                         valor_paga={evt.valor_paga}

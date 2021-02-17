@@ -215,7 +215,11 @@ export default function Evento(props) {
                         <div className={props.classes.paper}>
                             <h1 id="transition-modal-title">Detalles del Concurso:</h1>
                             <div>
-                                <Grid container spacing={3}>
+                                <Grid container spacing={3} style={{"textAlign": "center"}}>
+                                    {/* Imagen */}
+                                    <Grid item xs={12}>
+                                    <img src= {props.imagen}/>
+                                    </Grid>
                                     {/* Nombre */}
                                     <Grid item xs={12} sm={6}>
                                     <TextField
@@ -243,18 +247,6 @@ export default function Evento(props) {
                                     />
                                     </Grid>
                                     {/* Imagen */}
-                                    <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        id="ver-imagen"
-                                        name="ver-imagen"
-                                        label="Imagen"
-                                        value={props.imagen}
-                                        fullWidth
-                                        InputProps={{
-                                            readOnly: true,
-                                        }}
-                                    />
-                                    </Grid>
                                     {/* Fecha Inicio */}
                                     <Grid item xs={12} sm={6}>
                                     <TextField
