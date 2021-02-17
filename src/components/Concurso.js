@@ -316,11 +316,11 @@ export default function Evento(props) {
                                             readOnly: true,
                                         }}
                                     />
-                                    <Button variant="contained" color="primary" style={{"marginLeft": "20px"}}>
-                                        <Link href={`/concurso/${props.evtId}`} color="inherit">
-                                            Ver Entradas
-                                        </Link>
+                                    <Link href={`/concurso/${props.evtId}`} color="inherit" style={{"marginLeft": "20px", "marginTop": "12px"}}>
+                                    <Button variant="contained" color="primary">
+                                        Ver Entradas
                                     </Button>
+                                    </Link>
                                     </Grid>
                                 </Grid>
                                 </div>

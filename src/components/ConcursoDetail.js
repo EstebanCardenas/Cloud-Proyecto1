@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import Grid from '@material-ui/core/Grid';
 import Entrada from './Entrada';
 import Pagination from '@material-ui/lab/Pagination';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 export default function ConcursoDetail({match}) {
     //state
     const [page, setPage] = useState(1)
     const [pages, setPages] = useState(0)
     const [voces, setVoces] = useState([])
+    const [fetched, setFetched] = useState(false)
 
     //onMount
     useEffect(() => {
@@ -66,12 +68,13 @@ export default function ConcursoDetail({match}) {
                 }
             }
             setVoces(voces)
+            setFetched(true)
         }
         getAll()
     }, [match, page])
 
     function renderVoces() {
-        if (voces.length) {
+        if (voces.length && fetched) {
             return (
                 <div>
                     <Grid container spacing={3}>
@@ -95,15 +98,36 @@ export default function ConcursoDetail({match}) {
                 </div>
             )
         }
-        return (
-            <div style={{
-                "display": "flex",
-                "justifyContent": "center",
-                "alignItems": "center"
-            }}>
-                <b>Aún no hay entradas para el concurso</b>
-            </div>
-        )
+        else if (!voces.length && fetched) {
+            return (
+                <div style={{
+                    "display": "flex",
+                    "justifyContent": "center",
+                    "alignItems": "center",
+                    "marginTop": "20px"
+                }}>
+                    <b>Aún no hay entradas para el concurso, cuando las haya aparecerán aquí</b>
+                </div>
+            )
+        }
+        else if (!fetched) {
+            return (
+                <div style={{
+                    "display": "flex",
+                    "justifyContent": "center",
+                    "alignItems": "center",
+                    "marginTop": "20px",
+                    "flexDirection": "column",
+                }}>
+                    <div>
+                        <b>Las voces se están cargando</b>
+                    </div>
+                    <div style={{"marginTop": "30px"}}>
+                        <CircularProgress />
+                    </div>
+                </div>
+            )
+        }
     }
 
     return (
