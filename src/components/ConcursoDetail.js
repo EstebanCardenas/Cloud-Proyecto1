@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Grid from '@material-ui/core/Grid';
 import Entrada from './Entrada';
+import Pagination from '@material-ui/lab/Pagination';
 
 export default function ConcursoDetail({match}) {
     //state
@@ -73,7 +74,7 @@ export default function ConcursoDetail({match}) {
         if (voces.length) {
             return (
                 <div>
-                    <Grid container spacing={3} style={{"margin": "20px 20px"}}>
+                    <Grid container spacing={3}>
                         {voces.map((voz,idx) => {
                             return(
                                 <Grid item xs={12} sm={4} key={idx}>
@@ -84,6 +85,13 @@ export default function ConcursoDetail({match}) {
                             )
                         })}
                     </Grid>
+                    <div style={{
+                        "display": "flex",
+                        "justifyContent": "center",
+                        "marginTop": "20px"
+                    }}>
+                        <Pagination count={pages} page={page} variant="outlined" color="primary" onChange={(ev, val) => setPage(val)} showFirstButton showLastButton/>
+                    </div>
                 </div>
             )
         }
