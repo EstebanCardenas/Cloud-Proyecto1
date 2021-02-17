@@ -298,7 +298,7 @@ def voces_concurso(concurso_id):
         return jsonify({"msg":"Debe ser el dueño del concurso para ver las voces"}),403
     page = request.args.get('page')
     page = int(page) if page else 1
-    voces_pag = Voz.query.filter_by(concurso_id=concurso_id).order_by(desc(Voz.f_creacion)).paginate(page=page,per_page=50)
+    voces_pag = Voz.query.filter_by(concurso_id=concurso_id).order_by(Voz.f_creacion.desc()).paginate(page=page,per_page=50)
     voces = voces_pag.items
     num_pags = voces_pag.pages
     return jsonify({"voces":vocesSchema.dump(voces), "total_pags":num_pags}),200
