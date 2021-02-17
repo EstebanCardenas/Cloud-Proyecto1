@@ -21,7 +21,7 @@ app.config['SECRET_KEY'] = 'top secret'
 app.config['JWT_ACCESS_LIFESPAN'] = {'hours': 24}
 app.config['JWT_REFRESH_LIFESPAN'] = {'days': 30}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URI']
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'#os.environ['DATABASE_URI']
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['CONVERT_FOLDER'] = './convertidos/'
 app.config['BROKER_URL'] = 'redis://localhost:6379'
@@ -301,6 +301,7 @@ def voces_concurso(concurso_id):
     if user.id != concurso.user_id:
         return jsonify({"msg":"Debe ser el dueño del concurso para ver las voces"}),403
     page = request.args.get('page')
+    print(page)
     page = int(page) if page else 1
     voces_pag = Voz.query.filter_by(concurso_id=concurso_id).order_by(Voz.f_creacion.desc()).paginate(page=page,per_page=50)
     voces = voces_pag.items
