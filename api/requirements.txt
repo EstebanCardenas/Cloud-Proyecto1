@@ -5,7 +5,9 @@ flask-cors
 flask-sqlalchemy
 flask-marshmallow
 flask-praetorian
+marshmallow-sqlalchemy
 Werkzeug
+psycopg2-binary
 
 #tasks
 celery

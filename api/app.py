@@ -7,19 +7,21 @@ from flask_praetorian import Praetorian, auth_required, current_user
 from werkzeug.utils import secure_filename
 #modelos
 from models import *
+from extensions import celery
+from tasks import convertir_a_mp3
 from datetime import datetime
 import traceback
 import base64
 
 UPLOAD_FOLDER = './originales/'
-ALLOWED_EXTENSIONS = {'wav','mp3', 'aac', 'm4a'}
+ALLOWED_EXTENSIONS = {'wav', 'mp3', 'aac', 'm4a', 'ogg'}
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'top secret'
 app.config['JWT_ACCESS_LIFESPAN'] = {'hours': 24}
 app.config['JWT_REFRESH_LIFESPAN'] = {'days': 30}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'#os.environ['DATABASE_URI']
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['CONVERT_FOLDER'] = './convertidos/'
 app.config['BROKER_URL'] = 'redis://localhost:6379'
