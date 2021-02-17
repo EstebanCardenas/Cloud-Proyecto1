@@ -82,6 +82,10 @@ export default function Register(props) {
             body: JSON.stringify(data2)
         })
 
+        if (response2["status"] !== 201) {
+            alert("No se pudo completar la postulación")
+            return
+        }
         const body2 = await response2.json()
         console.log(body2)
     }
