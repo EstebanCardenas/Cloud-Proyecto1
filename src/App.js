@@ -26,13 +26,15 @@ function App() {
   return (
     <Router>
       <Switch>
-        <Route exact path="/">
+        {/* HOME */}
+        <Route exact path="/"> 
           <NavBar 
             logged={logged}
             setLogged={setLogged}
           />
           <Home />
         </Route>
+        {/* CONCURSOS */}
         <Route path="/concursos">
           <NavBar 
               logged={logged}
@@ -40,7 +42,9 @@ function App() {
           />
           <Concursos />
         </Route>
+        {/* HOME DE CONCURSO */}
         <Route path="/home/concurso/:url" component={HomeConcurso} />
+        {/* DETAIL CONCURSO ADMINS */}
         <Route path="/concurso/:id" component={ConcursoDetail} />
       </Switch>
     </Router>

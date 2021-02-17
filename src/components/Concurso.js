@@ -76,7 +76,7 @@ export default function Evento(props) {
             newEvs[props.ind].url = evtURLConcurso
             newEv["url"] = evtURLConcurso
         }
-        if (evtImagen64 !== props.imagen) {
+        if (evtImagen64 !== props.imagen && evtImagen64 !== "") {
             newEvs[props.ind].imagen = evtImagen64
             newEv["imagen_base64"] = evtImagen64
         }
@@ -139,6 +139,7 @@ export default function Evento(props) {
         if (!token)
             return
         const mod = darConcursosModificados()
+        console.log(mod)
         if (!mod)
             return
         //fetch
@@ -151,18 +152,20 @@ export default function Evento(props) {
                 },
                 body: JSON.stringify(newEv)
             })
-            .then(resp => [resp.json(), resp["status"]])
             .then(resp => {
-                const json = resp[0]
-                const status = resp[1]
-                if (status !== 200) {
-                    alert(`Error: ${json['msg']}`)
+                if (resp["status"] === 400) {
+                    alert("La url ya esta en uso")
                     return
                 }
-                //actualizar front
-                props.setConcursos(mod[0])
-                alert("Evento actualizado!")
-                setOpenEditar(false)
+                return resp.json()
+            })
+            .then(json => {
+                if (json) {
+                    //actualizar front
+                    props.setConcursos(mod[0])
+                    alert("Evento actualizado!")
+                    setOpenEditar(false)
+                }
             })
             .catch(err => {
                 console.log(err)
@@ -206,9 +209,9 @@ export default function Evento(props) {
                             <div>
                                 <Grid container spacing={3} style={{"textAlign": "center"}}>
                                     {/* Imagen */}
-                                    <Grid item xs={12}>
-                                    <img src= {props.imagen}/>
-                                    </Grid>
+                                    {/* <Grid item xs={12}>
+                                        <img src= {props.imagen}/>
+                                    </Grid> */}
                                     {/* Nombre */}
                                     <Grid item xs={12} sm={6}>
                                     <TextField
