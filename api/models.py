@@ -6,7 +6,7 @@ class UserAdmin(db.Model):
     nombres = db.Column(db.String(220), nullable=0)
     apellidos = db.Column(db.String(220), nullable=0)
     email = db.Column(db.String(120), nullable=0, unique=1)
-    contrasena = db.Column(db.String(120), nullable=0)
+    contrasena = db.Column(db.String(300), nullable=0)
     #relaciones
     concursos = db.relationship('Concurso', backref='user_admin', lazy=1)
 
