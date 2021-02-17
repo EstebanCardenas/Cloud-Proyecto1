@@ -181,19 +181,20 @@ export default function Concursos() {
             body: JSON.stringify(evtDatos)
         })
         .then(resp => {
-            return [resp.json(), resp["status"]]
+            if (resp["status"] !== 201) {
+                alert(`No se pudo crear el concurso`)
+                return
+            }
+            return resp.json()
         })
-        .then(resp => {
-            const json = resp[0]
-            const status = resp[1]
-            if (status !== 201)
-                alert(`Error: ${json['msg']}`)
-            else {
+        .then(json => {            
+            if (json) {
                 let newArr = [...concursos]
+                const newUrl = evtURLConcurso !== "" ? evtURLConcurso : json["url"]
                 newArr.unshift({
                     id: json["id"],
                     nombre: evtNombre,
-                    url: evtURLConcurso,
+                    url: newUrl,
                     imagen: evtImagen,
                     guion: evtGuion,
                     recomendaciones: evtRecomendaciones,
