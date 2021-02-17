@@ -47,7 +47,7 @@ usersAdminSchema = UserAdminSchema(many=1)
 class Concurso(db.Model):
     id = db.Column(db.Integer, primary_key=1)
     nombre = db.Column(db.String(120), nullable=0)
-    imagen_base64 = db.Column(db.LargeBinary, nullable=1)
+    imagen_base64 = db.Column(db.Text, nullable=1)
     url = db.Column(db.String(120), nullable=0, unique=1)
     f_inicio = db.Column(db.DateTime, nullable=0)
     f_fin = db.Column(db.DateTime, nullable=0)

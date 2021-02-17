@@ -124,9 +124,9 @@ def concursos():
         recomendaciones = req.get('recomendaciones',None)
         print('reqprint', req)
         imagen = req.get('imagen_base64',None)
-        if imagen:
-            data_bytes = imagen.encode("utf-8")
-            imagen = base64.b64encode(data_bytes)
+        # if imagen:
+        #     data_bytes = imagen.encode("utf-8")
+        #     imagen = base64.b64encode(data_bytes)
         url = req.get('url',None)
         if not nombre or not f_inicio or not f_fin or \
             not valor_paga or not guion or not recomendaciones:
@@ -314,7 +314,7 @@ def voces_concurso_activo(concurso_url):
         return jsonify({"msg":"No existe ningun concurso activo con la url especificada"}),404
     page = request.args.get('page')
     page = int(page) if page else 1
-    voces_pag = Voz.query.filter_by(concurso_id=concurso.id).filter(Voz.archivo_voz.has(convertido=True)).\
+    voces_pag = Voz.query.filter_by(concurso_id=concurso.id).filter(Voz.archivo_voz.has(convertido=False)).\
         order_by(Voz.f_creacion.desc()).paginate(page=page,per_page=50)
     voces = voces_pag.items
     num_pags = voces_pag.pages

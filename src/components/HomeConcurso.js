@@ -151,7 +151,7 @@ export default function HomeConcurso({ match }) {
             setConcurso(json)
             console.log(json)
             setConcursoId(json.id)
-            //setImageBase64("data:image/jpeg;base64," + json.imagen_base64)
+            setImageBase64(json.imagen_base64)
             //setImageBase64(window.atob(json.image_base64))
             //console.log(window.atob(json.image_base64))
 
@@ -162,19 +162,37 @@ export default function HomeConcurso({ match }) {
                 return
             }
             json = await resp.json()
+            
+            console.log('fetchvoces',json)
             if (json["total_pags"]) {
                 const voces = json["voces"]
                 //get audios
                 const audios = []
-                voces.forEach( async voz => {
+                
+                //for(let voz of voces){
+                    //console.log('voz',voz)
+                    // let url = new URL(`/api/audio/${voz.archivo_id}`)
+                    // url.searchParams.append('convertido', 0)
+                    // resp = await fetch(url)
+                    // if (resp === 200) {
+                    //     json = await resp.json()
+                    //     console.log(json)
+                    // }
+                //}
+
+                 voces.forEach( async voz => {
+                    console.log('voz',voz)
+                    //let url = new URL(`http://127.0.0.1:5000/api/audio/${voz.archivo_id}`)
                     let url = new URL(`/api/audio/${voz.archivo_id}`)
                     url.searchParams.append('convertido', 1)
                     resp = await fetch(url)
+                    json = await resp.json()
+                    console.log('jsonurl',json)
                     if (resp === 200) {
                         json = await resp.json()
                         console.log(json)
                     }
-                })
+                 })
                 setPags(audios.length)
                 setAudios(audios)
             }
@@ -231,7 +249,7 @@ export default function HomeConcurso({ match }) {
                     {/* BANNER */}
                     <div style={{"textAlign": "center", "margin": "30px 0px"}}>
                         <img
-                            src={`data:image/jpeg;base64,${imageBase64}`}
+                            src={imageBase64}
                             alt='Banner'
                         />
                     </div>
