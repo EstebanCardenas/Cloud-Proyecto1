@@ -88,6 +88,7 @@ export default function Register(props) {
         }
         const body2 = await response2.json()
         console.log(body2)
+        alert("Hemos recibido tu voz y la estamos procesando para que sea publicada en la página del concurso y pueda ser posteriormente revisada por nuestro equipo de trabajo. Tan pronto la voz quede publicada en la página del concurso te notificaremos por email")
     }
 
     return (
@@ -168,7 +169,7 @@ export default function Register(props) {
                     color="primary"
                     className={classes.submit}
                 >
-                    Postularme
+                    Enviar voz
                 </Button>
                 </form>
             </div>

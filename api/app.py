@@ -1,7 +1,7 @@
 import random, string
 from datetime import datetime
 import os
-from flask import Flask, request, jsonify, json, send_file
+from flask import Flask, request, jsonify, json, send_file, make_response
 from flask_cors.extension import CORS
 from flask_praetorian import Praetorian, auth_required, current_user
 from werkzeug.utils import secure_filename
@@ -21,7 +21,7 @@ app.config['SECRET_KEY'] = 'top secret'
 app.config['JWT_ACCESS_LIFESPAN'] = {'hours': 24}
 app.config['JWT_REFRESH_LIFESPAN'] = {'days': 30}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URI']
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db' #os.environ['DATABASE_URI']
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['CONVERT_FOLDER'] = './convertidos/'
 app.config['BROKER_URL'] = 'redis://localhost:6379'
@@ -258,6 +258,8 @@ def descargar_audio(audio_id):
     if convertido and not archivo.convertido:
         return jsonify({"msg":"El archivo de voz no se ha convertido"}),400
     return send_file(archivo.archivo_convertido if convertido else archivo.archivo_original),200
+    #return send_file(archivo.archivo_original),200
+
 
 
 @app.route('/api/voz', methods=['POST'])
@@ -314,7 +316,7 @@ def voces_concurso_activo(concurso_url):
         return jsonify({"msg":"No existe ningun concurso activo con la url especificada"}),404
     page = request.args.get('page')
     page = int(page) if page else 1
-    voces_pag = Voz.query.filter_by(concurso_id=concurso.id).filter(Voz.archivo_voz.has(convertido=False)).\
+    voces_pag = Voz.query.filter_by(concurso_id=concurso.id).filter(Voz.archivo_voz.has(convertido=True)).\
         order_by(Voz.f_creacion.desc()).paginate(page=page,per_page=50)
     voces = voces_pag.items
     num_pags = voces_pag.pages

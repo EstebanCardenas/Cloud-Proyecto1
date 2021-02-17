@@ -104,8 +104,10 @@ export default function HomeConcurso({ match }) {
     const [concursoId, setConcursoId] = useState("")
     const [imageBase64, setImageBase64] = useState("")
     //paginación
-    const [pags, setPags] = useState(0)
-    const [page, setPage] = useState(1)
+    const [pagination, setPagination] = useState({
+        pags: 3,
+        page: 1
+    })
 
     //tabs
     const [tab, setTab] = useState(0)
@@ -167,56 +169,60 @@ export default function HomeConcurso({ match }) {
             if (json["total_pags"]) {
                 const voces = json["voces"]
                 //get audios
-                const audios = []
+                let audiosaux = []
                 
-                //for(let voz of voces){
-                    //console.log('voz',voz)
-                    // let url = new URL(`/api/audio/${voz.archivo_id}`)
-                    // url.searchParams.append('convertido', 0)
-                    // resp = await fetch(url)
-                    // if (resp === 200) {
-                    //     json = await resp.json()
-                    //     console.log(json)
-                    // }
-                //}
-
-                 voces.forEach( async voz => {
+                for(let voz of voces){
                     console.log('voz',voz)
                     //let url = new URL(`http://127.0.0.1:5000/api/audio/${voz.archivo_id}`)
                     let url = new URL(`/api/audio/${voz.archivo_id}`)
                     url.searchParams.append('convertido', 1)
                     resp = await fetch(url)
-                    json = await resp.json()
-                    console.log('jsonurl',json)
-                    if (resp === 200) {
-                        json = await resp.json()
-                        console.log(json)
-                    }
-                 })
-                setPags(audios.length)
-                setAudios(audios)
+                    let respblob = await resp.blob()
+                    //console.log('resphomeconcurso',respblob)
+                    audiosaux.push({
+                        url: respblob
+                        //url: new MediaStream(resp)
+                    })
+                }
+
+                //  voces.forEach( async voz => {
+                //     console.log('voz',voz)
+                //     let url = new URL(`http://127.0.0.1:5000/api/audio/${voz.archivo_id}`)
+                //     //let url = new URL(`/api/audio/${voz.archivo_id}`)
+                //     url.searchParams.append('convertido', 1)
+                //     resp = await fetch(url)
+                //     let respblob = await resp.blob()
+                //     console.log('resphomeconcurso',respblob)
+                //     audiosaux.push({
+                //         url: respblob
+                //     })
+                //  })
+                console.log('adudiosaxu',audiosaux)
+                // for (let i=0; i<5; i++){
+                //     audiosaux = [...audiosaux,...audiosaux]
+                // }
+                setAudios(audiosaux)
+                setPagination({
+                    ...pagination,
+                    pags: Math.ceil(audiosaux.length/50)
+                })
             }
         }
         getAll()
     }, [match.url])
 
     function handlePagChange(evt,val) {
-        setPage(val)
+        setPagination({
+            ...pagination,page:val
+        })
     }
 
     function renderAudios() {
-        if (pags) {
-            return (
-                <div style={{
-                    "display": "flex",
-                    "justifyContent": "center",
-                    "marginTop": "20px"
-                }}>
-                    <Pagination count={pags} page={page} variant="outlined" color="primary" onChange={handlePagChange} showFirstButton showLastButton/>
-                </div>
-            )
-        } else {
-            return (
+        let indiceInicio = 50*(pagination.page -1 );
+        let indiceFin = pagination.page === pagination.pags? indiceInicio+(audios.length%50) : indiceInicio+50;
+        console.log('indicies',indiceInicio,indiceFin)
+        return (
+                <div>
                 <div style={{
                     "textAlign": "center",
                     "marginTop": "30px",
@@ -224,9 +230,30 @@ export default function HomeConcurso({ match }) {
                     "fontWeight": "bold"
                 }}>
                     Las entradas del concurso aparecerán aquí cuando sean convertidas
+                {audios.slice(indiceInicio, indiceFin).map(audio => <div style = {{marginBottom:'20px'}}>
+                    <ReactAudioPlayer
+                        src = {URL.createObjectURL(audio.url)}
+                        //src = {audio.url}
+                        //src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+                        onPlay={e => console.log("onPlay")}
+                        controls
+                    />
+                    </div>
+                    )}
                 </div>
+                { audios.length >49 &&
+                     <div style={{
+                    "display": "flex",
+                    "justifyContent": "center",
+                    "marginTop": "20px"
+                }}>
+                    <Pagination count={pagination.pags} page={pagination.page} variant="outlined" color="primary" onChange={handlePagChange} showFirstButton showLastButton/>
+                </div>
+                }
+                </div>
+                
             )
-        }
+        
     }
 
     function renderConcurso() {
@@ -324,6 +351,7 @@ export default function HomeConcurso({ match }) {
                         ENTRADAS
                     </Typography>
                     {renderAudios()}
+                    
                     {/* <ReactAudioPlayer
                         src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
                         onPlay={e => console.log("onPlay")}
