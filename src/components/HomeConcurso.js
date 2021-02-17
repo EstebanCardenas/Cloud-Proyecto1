@@ -174,7 +174,7 @@ export default function HomeConcurso({ match }) {
                 for(let voz of voces){
                     console.log('voz',voz)
                     let url = new URL(`http://127.0.0.1:5000/api/audio/${voz.archivo_id}`)
-                    url.searchParams.append('convertido', 1)
+                    //url.searchParams.append('convertido', 1)
                     resp = await fetch(url)
                     let respblob = await resp.blob()
                     //console.log('resphomeconcurso',respblob)
@@ -229,7 +229,7 @@ export default function HomeConcurso({ match }) {
                     "fontWeight": "bold"
                 }}>
                     Las entradas del concurso aparecerán aquí cuando sean convertidas
-                {audios.slice(indiceInicio, indiceFin).map(audio => <div style = {{marginBottom:'20px'}}>
+                {audios.slice(indiceInicio, indiceFin).map((audio,idx) => <div style = {{marginBottom:'20px'}} key={idx}>
                     <ReactAudioPlayer
                         src = {URL.createObjectURL(audio.url)}
                         //src = {audio.url}
@@ -350,16 +350,6 @@ export default function HomeConcurso({ match }) {
                         ENTRADAS
                     </Typography>
                     {renderAudios()}
-                    
-                    {/* <ReactAudioPlayer
-                        src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
-                        onPlay={e => console.log("onPlay")}
-                        controls
-                    />
-                    <ReactHowlerPlayer 
-                        src={["https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"]}
-                        isDark = {true}
-                    /> */}
                 </div>
             )
         } else {

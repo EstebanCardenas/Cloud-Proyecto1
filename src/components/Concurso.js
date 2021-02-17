@@ -303,7 +303,7 @@ export default function Evento(props) {
                                         }}
                                     />
                                     </Grid>
-                                    <Grid item xs={12} sm={2} style={{"display": "flex", "flexWrap": "wrap"}}>
+                                    <Grid item xs={12} sm={6} style={{"display": "flex", "flexWrap": "wrap"}}>
                                     {/* Pago */}
                                     <TextField
                                         id="ver-pago"
@@ -316,6 +316,11 @@ export default function Evento(props) {
                                             readOnly: true,
                                         }}
                                     />
+                                    <Button variant="contained" color="primary" style={{"marginLeft": "20px"}}>
+                                        <Link href={`/concurso/${props.evtId}`} color="inherit">
+                                            Ver Entradas
+                                        </Link>
+                                    </Button>
                                     </Grid>
                                 </Grid>
                                 </div>
@@ -441,7 +446,7 @@ export default function Evento(props) {
                                         onChange={evt => setEvtRecomendaciones(evt.target.value)}
                                     />
                                     </Grid>
-                                    <Grid item xs={12} sm={2}>
+                                    <Grid item xs={12} sm={6}>
                                     {/* Pago */}
                                     <TextField
                                         id="pago"
@@ -452,16 +457,16 @@ export default function Evento(props) {
                                         value={evtPago}
                                         onChange={evt => setEvtPago(evt.target.value)}
                                     />
-                                    </Grid>
                                     {/* Submit */}
                                     <Button
                                         variant="contained"
                                         color="primary"
                                         type="submit"
-                                        className={props.classes.button}
+                                        style={{"marginTop": "12px", "marginLeft": "15px"}}
                                     >
                                         Editar!
                                     </Button>
+                                    </Grid>
                                 </Grid>
                                 </div>
                             </form>

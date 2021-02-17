@@ -72,11 +72,6 @@ const useStyles = makeStyles((theme) => ({
     selectEmpty: {
         marginTop: theme.spacing(2),
     },
-    button: {
-        marginTop: theme.spacing(3),
-        marginLeft: "0px",
-        float: 'right'
-    },
 }))
 
 export default function Concursos() {
@@ -353,7 +348,7 @@ export default function Concursos() {
                                         onChange={evt => setEvtRecomendaciones(evt.target.value)}
                                     />
                                     </Grid>
-                                    <Grid item xs={12} sm={2}>
+                                    <Grid item xs={12} sm={6}>
                                     {/* Pago */}
                                     <TextField
                                         id="pago"
@@ -364,16 +359,18 @@ export default function Concursos() {
                                         value={evtPago}
                                         onChange={evt => setEvtPago(evt.target.value)}
                                     />
-                                    </Grid>
-                                    {/* Submit */}
                                     <Button
                                         variant="contained"
                                         color="primary"
                                         type="submit"
                                         className={classes.button}
+                                        style={{"marginLeft": "20px", "marginTop": "12px"}}
                                     >
                                         Crear!
                                     </Button>
+                                    </Grid>
+                                   
+                                    {/* Submit */}
                                 </Grid>
                                 </div>
                             </form>
