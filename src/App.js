@@ -8,6 +8,7 @@ import NavBar from './components/NavBar';
 import Home from './components/Home'
 import Concursos from './components/Concursos'
 import HomeConcurso from './components/HomeConcurso'
+import ConcursoDetail from './components/ConcursoDetail'
 import { useEffect, useState } from 'react';
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
           <Concursos />
         </Route>
         <Route path="/home/concurso/:url" component={HomeConcurso} />
+        <Route path="/concurso/:id" component={ConcursoDetail} />
       </Switch>
     </Router>
   )
