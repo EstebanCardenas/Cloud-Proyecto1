@@ -6,9 +6,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
 
-email_from = "supervoices02@gmail.com"#os.environ['ADMIN_EMAIL']
-password = "supervoces20"#os.environ['ADMIN_PASSWORD']
-ip_front = "123"#os.environ['IP_FRONT']
+email_from = os.environ['ADMIN_EMAIL']
+password = os.environ['ADMIN_PASSWORD']
+ip_front = os.environ['IP_FRONT']
 
 @celery.task
 def convertir_a_mp3(archivo_id, path_origen, path_destino):

@@ -265,7 +265,7 @@ export default function HomeConcurso({ match }) {
                         "alignItems": "center",
                         "marginTop": "20px"
                     }}>
-                        <b>Aún no hay entradas para el concurso, cuando las haya aparecerán aquí</b>
+                        <b>Aún no hay entradas para el concurso convertidas, cuando las haya aparecerán aquí</b>
                     </div>
                 )
             }

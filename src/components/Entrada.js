@@ -22,7 +22,7 @@ export default function Entrada(props) {
                         <b>Nombres:</b> {voz.nombres} <br></br>
                         <b>Apellidos:</b> {voz.apellidos} <br></br>
                         <b>Fecha de Subida:</b> {voz.f_creacion.split("T")[0] + " | " + voz.f_creacion.split("T")[1]} <br></br>
-                        <b>Estado de Voz:</b> {convertida ? "Convertida": "En proceso"}<br></br>
+                        <b>Estado de Voz:</b> {voz["estado"]} <br></br>
                         <b>Archivo Original:</b> <br></br>
                         <ReactAudioPlayer
                             src = {window.URL.createObjectURL(voz.original)}
