@@ -347,8 +347,16 @@ export default function HomeConcurso({ match }) {
                             color="primary"
                             className={classes.submit}
                             onClick = {() => {
+                                if (new Date(concurso.f_inicio) > new Date()){
+                                    alert('El concurso no ha iniciado')
+                                }
+                                else if (new Date(concurso.f_fin) < new Date()){
+                                    alert('El concurso ya ha finalizado')
+                                }
+                                else{
                                 setOpenPostulacion(true)
                                 setConcursoId(concursoId)
+                                }
                             }}
                         >
                             Postularme
@@ -370,6 +378,8 @@ export default function HomeConcurso({ match }) {
                                 <PostulacionConcurso 
                                     setOpen = {setOpenPostulacion}
                                     concursoId = {concursoId}
+                                    fechaInicio =  {concurso.f_inicio}
+                                    fechaFin = {concurso.f_fin}
                                 />
                             </div>
                         </Fade>
