@@ -61,7 +61,6 @@ export default function ConcursoDetail({match}) {
                 if (statusOr === 200) {
                     const blob = await respOr.blob()
                     voces[i]["original"] = blob
-                    voces[i]["estado"] = "En proceso"
                 }
             }
             setVoces(voces)

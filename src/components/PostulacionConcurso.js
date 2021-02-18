@@ -84,11 +84,13 @@ export default function Register(props) {
 
         if (response2["status"] !== 201) {
             alert("No se pudo completar la postulación")
+	    props.setOpen(false)
             return
         }
         const body2 = await response2.json()
         console.log(body2)
         alert("Hemos recibido tu voz y la estamos procesando para que sea publicada en la página del concurso y pueda ser posteriormente revisada por nuestro equipo de trabajo. Tan pronto la voz quede publicada en la página del concurso te notificaremos por email")
+	props.setOpen(false)
     }
 
     return (

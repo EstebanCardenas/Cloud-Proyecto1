@@ -232,7 +232,6 @@ export default function HomeConcurso({ match }) {
                         "fontFamily": "sans-serif",
                         "fontWeight": "bold"
                     }}>
-                        Las entradas del concurso aparecerán aquí cuando sean convertidas
                     {audios.slice(indiceInicio, indiceFin).map((audio,idx) => <div style = {{marginBottom:'20px'}} key={idx}>
                         <ReactAudioPlayer
                             src = {URL.createObjectURL(audio.url)}
