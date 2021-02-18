@@ -15,6 +15,7 @@ import Pagination from '@material-ui/lab/Pagination';
 import PostulacionConcurso from './PostulacionConcurso';
 import ReactAudioPlayer from 'react-audio-player';
 import ReactHowlerPlayer from 'react-howler-player';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Button from '@material-ui/core/Button';
 import { CssBaseline } from '@material-ui/core';
@@ -103,6 +104,7 @@ export default function HomeConcurso({ match }) {
     const [openPostulacion, setOpenPostulacion] = useState(false)
     const [concursoId, setConcursoId] = useState("")
     const [imageBase64, setImageBase64] = useState("")
+    const [fetched, setFetched] = useState(false)
     //paginación
     const [pagination, setPagination] = useState({
         pags: 3,
@@ -174,7 +176,7 @@ export default function HomeConcurso({ match }) {
                 for(let voz of voces){
                     console.log('voz',voz)
                     let url = new URL(`http://127.0.0.1:5000/api/audio/${voz.archivo_id}`)
-                    //url.searchParams.append('convertido', 1)
+                    url.searchParams.append('convertido', 1)
                     resp = await fetch(url)
                     let respblob = await resp.blob()
                     //console.log('resphomeconcurso',respblob)
@@ -205,6 +207,7 @@ export default function HomeConcurso({ match }) {
                     ...pagination,
                     pags: Math.ceil(audiosaux.length/50)
                 })
+                setFetched(true)
             }
         }
         getAll()
@@ -217,41 +220,74 @@ export default function HomeConcurso({ match }) {
     }
 
     function renderAudios() {
-        let indiceInicio = 50*(pagination.page -1 );
-        let indiceFin = pagination.page === pagination.pags? indiceInicio+(audios.length%50) : indiceInicio+50;
-        console.log('indicies',indiceInicio,indiceFin)
-        return (
-                <div>
-                <div style={{
-                    "textAlign": "center",
-                    "marginTop": "30px",
-                    "fontFamily": "sans-serif",
-                    "fontWeight": "bold"
-                }}>
-                    Las entradas del concurso aparecerán aquí cuando sean convertidas
-                {audios.slice(indiceInicio, indiceFin).map((audio,idx) => <div style = {{marginBottom:'20px'}} key={idx}>
-                    <ReactAudioPlayer
-                        src = {URL.createObjectURL(audio.url)}
-                        //src = {audio.url}
-                        //src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
-                        onPlay={e => console.log("onPlay")}
-                        controls
-                    />
+        if (audios.length && fetched) {
+            let indiceInicio = 50*(pagination.page -1 );
+            let indiceFin = pagination.page === pagination.pags? indiceInicio+(audios.length%50) : indiceInicio+50;
+            console.log('indicies',indiceInicio,indiceFin)
+            return (
+                    <div>
+                    <div style={{
+                        "textAlign": "center",
+                        "marginTop": "30px",
+                        "fontFamily": "sans-serif",
+                        "fontWeight": "bold"
+                    }}>
+                        Las entradas del concurso aparecerán aquí cuando sean convertidas
+                    {audios.slice(indiceInicio, indiceFin).map((audio,idx) => <div style = {{marginBottom:'20px'}} key={idx}>
+                        <ReactAudioPlayer
+                            src = {URL.createObjectURL(audio.url)}
+                            //src = {audio.url}
+                            //src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+                            onPlay={e => console.log("onPlay")}
+                            controls
+                        />
+                        </div>
+                        )}
                     </div>
-                    )}
-                </div>
-                { audios.length >49 &&
-                     <div style={{
-                    "display": "flex",
-                    "justifyContent": "center",
-                    "marginTop": "20px"
-                }}>
-                    <Pagination count={pagination.pags} page={pagination.page} variant="outlined" color="primary" onChange={handlePagChange} showFirstButton showLastButton/>
-                </div>
-                }
-                </div>
-                
-            )
+                    { audios.length >49 &&
+                        <div style={{
+                        "display": "flex",
+                        "justifyContent": "center",
+                        "marginTop": "20px"
+                    }}>
+                        <Pagination count={pagination.pags} page={pagination.page} variant="outlined" color="primary" onChange={handlePagChange} showFirstButton showLastButton/>
+                    </div>
+                    }
+                    </div>
+                    
+                )
+            }
+            else if (!audios.length && fetched) {
+                return (
+                    <div style={{
+                        "display": "flex",
+                        "justifyContent": "center",
+                        "alignItems": "center",
+                        "marginTop": "20px"
+                    }}>
+                        <b>Aún no hay entradas para el concurso, cuando las haya aparecerán aquí</b>
+                    </div>
+                )
+            }
+            else if (!fetched) {
+                return (
+                    <div style={{
+                        "display": "flex",
+                        "justifyContent": "center",
+                        "alignItems": "center",
+                        "marginTop": "20px",
+                        "flexDirection": "column",
+                    }}>
+                        <div>
+                            <b>Las voces se están cargando</b>
+                        </div>
+                        <div style={{"marginTop": "30px"}}>
+                            <CircularProgress />
+                        </div>
+                    </div>
+                )
+            }
+            
         
     }
 
