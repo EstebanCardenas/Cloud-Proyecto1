@@ -39,16 +39,19 @@ export default function ConcursoDetail({match}) {
             let json = await resp.json()
             setPages(json["total_pags"])
             let voces = json["voces"]
-            for (let voz of voces) {
+            for (let i=0; i<voces.length; i++) {
+                const voz = voces[i]
                 //archivo convertido
-                url = new URL(`http://localhost:5000/api/audio/${voz.archivo_id}`)
+                let url = new URL(`http://localhost:5000/api/audio/${voz.archivo_id}`)
                 url.searchParams.append('convertido', 1)
                 let respConv = await fetch(url)
                 let statusConv = resp["status"]
-                console.log(respConv)
-                if (statusConv === 200) {
+                if (statusConv === 400) {
+                    voces[i]["estado"] = "En proceso"
+                } else if (statusConv === 200) {
                     const blob = await respConv.blob()
-                    voz["convertida"] = blob
+                    voces[i]["convertida"] = blob
+                    voces[i]["estado"] = "Convertida"
                 }
                 //archivo sin convertir
                 url = new URL(`http://localhost:5000/api/audio/${voz.archivo_id}`)
@@ -57,7 +60,8 @@ export default function ConcursoDetail({match}) {
                 let statusOr = resp["status"]
                 if (statusOr === 200) {
                     const blob = await respOr.blob()
-                    voz["original"] = blob
+                    voces[i]["original"] = blob
+                    voces[i]["estado"] = "En proceso"
                 }
             }
             setVoces(voces)

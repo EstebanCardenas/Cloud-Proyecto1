@@ -207,8 +207,8 @@ export default function HomeConcurso({ match }) {
                     ...pagination,
                     pags: Math.ceil(audiosaux.length/50)
                 })
-                setFetched(true)
             }
+            setFetched(true)
         }
         getAll()
     }, [match.url])

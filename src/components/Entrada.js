@@ -10,12 +10,11 @@ export default function Entrada(props) {
     //onMount
     useEffect(() => {
         setVoz(props.voz)
-        console.log(voz)
     }, [])
 
     function renderEntrada() {
-        console.log(voz.convertida ? "convertida": "no convertida")
         if (Object.keys(voz).length) {
+            let convertida = voz["estado"] === "Convertida"
             return (
                 <Card>
                     <CardContent>
@@ -23,13 +22,13 @@ export default function Entrada(props) {
                         <b>Nombres:</b> {voz.nombres} <br></br>
                         <b>Apellidos:</b> {voz.apellidos} <br></br>
                         <b>Fecha de Subida:</b> {voz.f_creacion.split("T")[0] + " | " + voz.f_creacion.split("T")[1]} <br></br>
-                        <b>Estado de Voz:</b> {voz.convertida ? "Convertida": "En proceso"}<br></br>
+                        <b>Estado de Voz:</b> {convertida ? "Convertida": "En proceso"}<br></br>
                         <b>Archivo Original:</b> <br></br>
                         <ReactAudioPlayer
                             src = {window.URL.createObjectURL(voz.original)}
                             controls
                         />
-                        {voz.convertida ? 
+                        {convertida ? 
                         <div>
                             <br></br>
                             <b>Archivo Convertido:</b> <br></br>
