@@ -14,6 +14,7 @@ export default function Entrada(props) {
     }, [])
 
     function renderEntrada() {
+        console.log(voz.convertida ? "convertida": "no convertida")
         if (Object.keys(voz).length) {
             return (
                 <Card>
@@ -25,7 +26,7 @@ export default function Entrada(props) {
                         <b>Estado de Voz:</b> {voz.convertida ? "Convertida": "En proceso"}<br></br>
                         <b>Archivo Original:</b> <br></br>
                         <ReactAudioPlayer
-                            src = {URL.createObjectURL(voz.original)}
+                            src = {window.URL.createObjectURL(voz.original)}
                             controls
                         />
                         {voz.convertida ? 
@@ -33,7 +34,7 @@ export default function Entrada(props) {
                             <br></br>
                             <b>Archivo Convertido:</b> <br></br>
                             <ReactAudioPlayer
-                                src = {URL.createObjectURL(voz.convertida)}
+                                src = {window.URL.createObjectURL(voz.convertida)}
                                 controls
                             />
                         </div>

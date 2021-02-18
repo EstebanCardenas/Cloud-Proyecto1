@@ -43,27 +43,20 @@ export default function ConcursoDetail({match}) {
                 //archivo convertido
                 url = new URL(`http://localhost:5000/api/audio/${voz.archivo_id}`)
                 url.searchParams.append('convertido', 1)
-                resp = await fetch(url)
-                status = resp["status"]
-                if (status === 404) {
-                    alert("Archivo de voz no encontrado")
-                    return
-                }
-                if (status === 200) {
-                    const blob = await resp.blob()
+                let respConv = await fetch(url)
+                let statusConv = resp["status"]
+                console.log(respConv)
+                if (statusConv === 200) {
+                    const blob = await respConv.blob()
                     voz["convertida"] = blob
                 }
                 //archivo sin convertir
                 url = new URL(`http://localhost:5000/api/audio/${voz.archivo_id}`)
                 url.searchParams.append('convertido', 0)
-                resp = await fetch(url)
-                status = resp["status"]
-                if (status === 404) {
-                    alert("Archivo de voz no encontrado")
-                    return
-                }
-                if (status === 200) {
-                    const blob = await resp.blob()
+                let respOr = await fetch(url)
+                let statusOr = resp["status"]
+                if (statusOr === 200) {
+                    const blob = await respOr.blob()
                     voz["original"] = blob
                 }
             }
@@ -79,7 +72,7 @@ export default function ConcursoDetail({match}) {
                 <div>
                     <Grid container spacing={3}>
                         {voces.map((voz,idx) => {
-                            return(
+                            return (
                                 <Grid item xs={12} sm={4} key={idx}>
                                     <Entrada
                                         voz={voz}
