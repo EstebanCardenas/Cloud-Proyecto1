@@ -172,9 +172,9 @@ def concurso(concurso_id):
         recomendaciones = req.get('recomendaciones',None)
         imagen = req.get('imagen_base64',None)
         print(imagen)
-        if imagen:
-            data_bytes = imagen.encode("utf-8")
-            imagen = base64.b64encode(data_bytes)
+        # if imagen:
+        #     data_bytes = imagen.encode("utf-8")
+        #     imagen = base64.b64encode(data_bytes)
         url = req.get('url',None)
         if nombre:
             concurso.nombre = nombre

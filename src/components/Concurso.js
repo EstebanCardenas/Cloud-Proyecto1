@@ -63,6 +63,17 @@ export default function Evento(props) {
         })
     }
 
+    function convertirBase64(archivo) {
+        console.log(archivo)
+        var reader = new FileReader();
+        reader.readAsDataURL(archivo[0]);
+        reader.onload=function(){
+            var base64 = reader.result;
+            console.log(base64)
+            setEvtImagen64(base64)
+        }
+    }
+
     function darConcursosModificados() {
         const newEvs = [...props.concursos]
         const newEv = {}
@@ -117,17 +128,6 @@ export default function Evento(props) {
         }
         //Devolver modificado
         return Object.keys(newEv).length ? [newEvs, newEv] : []
-    }
-
-    function convertirBase64(archivo) {
-        console.log(archivo)
-        var reader = new FileReader();
-        reader.readAsDataURL(archivo[0]);
-        reader.onload=function(){
-            var base64 = reader.result;
-            console.log(base64)
-            setEvtImagen64(base64)
-        }
     }
 
     function editarConcurso(evt) {
