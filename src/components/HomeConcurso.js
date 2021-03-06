@@ -175,8 +175,7 @@ export default function HomeConcurso({ match }) {
                 
                 for(let voz of voces){
                     console.log('voz',voz)
-                    let url = new URL(`http://127.0.0.1:5000/api/audio/${voz.archivo_id}`)
-                    url.searchParams.append('convertido', 1)
+                    let url = `http://127.0.0.1:5000/api/audio/${voz.archivo_id}?convertido=1`
                     resp = await fetch(url)
                     let respblob = await resp.blob()
                     //console.log('resphomeconcurso',respblob)

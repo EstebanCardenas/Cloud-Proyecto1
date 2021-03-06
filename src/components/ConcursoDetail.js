@@ -42,8 +42,7 @@ export default function ConcursoDetail({match}) {
             for (let i=0; i<voces.length; i++) {
                 const voz = voces[i]
                 //archivo convertido
-                let url = new URL(`http://localhost:5000/api/audio/${voz.archivo_id}`)
-                url.searchParams.append('convertido', 1)
+                let url = `http://localhost:5000/api/audio/${voz.archivo_id}?convertido=1`
                 let respConv = await fetch(url)
                 let statusConv = resp["status"]
                 if (statusConv === 400) {
@@ -54,8 +53,7 @@ export default function ConcursoDetail({match}) {
                     voces[i]["estado"] = "Convertida"
                 }
                 //archivo sin convertir
-                url = new URL(`http://localhost:5000/api/audio/${voz.archivo_id}`)
-                url.searchParams.append('convertido', 0)
+                url = `http://localhost:5000/api/audio/${voz.archivo_id}?convertido=0`
                 let respOr = await fetch(url)
                 let statusOr = resp["status"]
                 if (statusOr === 200) {
