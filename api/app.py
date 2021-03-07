@@ -62,7 +62,7 @@ def extract_ext(filename):
     return filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
 
 
-@app.route('/')
+@app.route('/api')
 def hello_world():
     return 'Hello World!'
 
