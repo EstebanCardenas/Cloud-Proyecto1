@@ -21,8 +21,7 @@ export default function ConcursoDetail({match}) {
             }
             const idx = match.url.search(/concurso/) + 9
             const concurso_id = match.url.slice(idx)
-            let url = new URL(`http://localhost:5000/api/concursos/${concurso_id}/voces`)
-            url.searchParams.append('page', page)
+            let url = `http://localhost:5000/api/concursos/${concurso_id}/voces?page=${page}`
             let resp = await fetch(url, {
                 headers: {
                     "Authorization": `Bearer ${token}`
