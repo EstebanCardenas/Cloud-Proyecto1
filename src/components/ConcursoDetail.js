@@ -21,7 +21,7 @@ export default function ConcursoDetail({match}) {
             }
             const idx = match.url.search(/concurso/) + 9
             const concurso_id = match.url.slice(idx)
-            let url = `http://localhost:5000/api/concursos/${concurso_id}/voces?page=${page}`
+            let url = `/api/concursos/${concurso_id}/voces?page=${page}`
             let resp = await fetch(url, {
                 headers: {
                     "Authorization": `Bearer ${token}`
@@ -41,7 +41,7 @@ export default function ConcursoDetail({match}) {
             for (let i=0; i<voces.length; i++) {
                 const voz = voces[i]
                 //archivo convertido
-                let url = `http://localhost:5000/api/audio/${voz.archivo_id}?convertido=1`
+                let url = `/api/audio/${voz.archivo_id}?convertido=1`
                 let respConv = await fetch(url)
                 let statusConv = resp["status"]
                 if (statusConv === 400) {
@@ -52,7 +52,7 @@ export default function ConcursoDetail({match}) {
                     voces[i]["estado"] = "Convertida"
                 }
                 //archivo sin convertir
-                url = `http://localhost:5000/api/audio/${voz.archivo_id}?convertido=0`
+                url = `/api/audio/${voz.archivo_id}?convertido=0`
                 let respOr = await fetch(url)
                 let statusOr = resp["status"]
                 if (statusOr === 200) {
