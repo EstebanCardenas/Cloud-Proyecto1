@@ -13,5 +13,6 @@ psycopg2-binary
 celery
 redis
 
-#gunicorn
+#deploy
 gunicorn
+wheel
