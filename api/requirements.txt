@@ -12,3 +12,6 @@ psycopg2-binary
 #tasks
 celery
 redis
+
+#gunicorn
+gunicorn
