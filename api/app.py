@@ -13,7 +13,7 @@ from datetime import datetime
 import traceback
 import base64
 
-UPLOAD_FOLDER = './originales/'
+UPLOAD_FOLDER = os.environ['AUDIOS']
 ALLOWED_EXTENSIONS = {'wav', 'mp3', 'aac', 'm4a', 'ogg'}
 
 app = Flask(__name__)
@@ -23,8 +23,7 @@ app.config['JWT_REFRESH_LIFESPAN'] = {'days': 30}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URI']
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['CONVERT_FOLDER'] = './convertidos/'
-app.config['BROKER_URL'] = 'redis://localhost:6379'
+app.config['BROKER_URL'] = os.environ['BROKER_URL']
 
 CORS(app)
 guard = Praetorian()
@@ -228,8 +227,8 @@ def subir_audio():
         db.session.add(archivo_voz)
         db.session.commit()
         try:
-            upload_directory = os.path.join(app.config['UPLOAD_FOLDER'],'{}/'.format(archivo_voz.id))
-            convert_directory = os.path.join(app.config['CONVERT_FOLDER'],'{}/'.format(archivo_voz.id))
+            upload_directory = os.path.join(app.config['UPLOAD_FOLDER'],'originales/','{}/'.format(archivo_voz.id))
+            convert_directory = os.path.join(app.config['UPLOAD_FOLDER'],'convertidos/','{}/'.format(archivo_voz.id))
             os.makedirs(upload_directory, exist_ok=True)
             os.makedirs(convert_directory, exist_ok=True)
             path = os.path.join(upload_directory,filename)
