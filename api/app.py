@@ -6,7 +6,9 @@ from flask_cors.extension import CORS
 from flask_praetorian import Praetorian, auth_required, current_user
 from werkzeug.utils import secure_filename
 #modelos
-from models import *
+#from models import *
+# pymongo
+import pymongo
 from extensions import celery
 from tasks import convertir_a_mp3
 from datetime import datetime
@@ -30,16 +32,19 @@ CORS(app)
 guard = Praetorian()
 
 #with app.app_context():
-db.init_app(app)
-ma.init_app(app)
+#db.init_app(app)
+#ma.init_app(app)
 guard.init_app(app, UserAdmin)
 celery.init_app(app)
 
+# Mongo Client
+client = pymongo.MongoClient('mongodb+srv://Moxi:webdb777@cluster0.k12lz.mongodb.net/cloud?retryWrites=true&w=majority')
+mongo_db = client.cloud
 
 with app.app_context():
     #Voz.__table__.drop(db.engine)
     #db.drop_all()
-    db.create_all()
+    #db.create_all()
 
 
 def random_string(num_chars):
@@ -85,14 +90,14 @@ def register():
     apellidos = req.get('apellidos',None)
     if not email or not password or not nombres or not apellidos:
         return jsonify({"msg": "Formulario incompleto"}), 400
-    if db.session.query(UserAdmin).filter_by(email=email).count() < 1:
-        db.session.add(UserAdmin(
-            email=email,
-            contrasena=guard.hash_password(password),
-            nombres=nombres,
-            apellidos=apellidos
-        ))
-        db.session.commit()
+    coll = mongo_db.user_admin
+    if coll.find_one({"email": email}) != None:
+        coll.insert_one({
+            "email": email,
+            "contrasena": guard.hash_password(password),
+            "nombres": nombres,
+            "apellidos": apellidos
+        })
         return {"msg": "usuario creado"}, 201
 
     else:
@@ -104,6 +109,8 @@ def register():
 def concursos():
     user = current_user()
     if request.method == 'GET':
+        coll = mongo_db.concurso
+        # TODO: Convertir Get y Post registros a Mongo
         return jsonify(concursosSchema.dump(user.concursos)), 200
     elif request.method == 'POST':
         req = json.loads(request.data)
@@ -157,6 +164,7 @@ def concursos():
 @auth_required
 def concurso(concurso_id):
     user = current_user()
+    # TODO: Convertir a Mongo
     concurso = Concurso.query.get_or_404(concurso_id)
     if user.id != concurso.user_id:
         return {"msg":"Solo se pueden acceder a concursos propios"},403

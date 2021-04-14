@@ -16,3 +16,6 @@ redis
 #deploy
 gunicorn
 wheel
+
+#mongo
+pymongo

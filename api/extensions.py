@@ -1,5 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
+#from flask_sqlalchemy import SQLAlchemy
+#from flask_marshmallow import Marshmallow
 from flask import has_app_context
 from celery import Celery
 
@@ -36,5 +36,6 @@ class FlaskCelery(Celery):
 
 
 celery = FlaskCelery()
-db = SQLAlchemy()
-ma = Marshmallow()
+#db = SQLAlchemy()
+#ma = Marshmallow()
+
