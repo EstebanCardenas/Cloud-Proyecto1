@@ -1,5 +1,5 @@
 from extensions import celery
-from models import ArchivoVoz, db
+from app import mongo_db, ObjectId
 import subprocess
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -14,15 +14,18 @@ ip_front = os.environ['IP_FRONT']
 def convertir_a_mp3(archivo_id, path_origen, path_destino):
     proc = subprocess.Popen(['ffmpeg', '-nostdin', '-y', '-i', path_origen, path_destino])
     proc.wait()
-    archivo = ArchivoVoz.query.get(int(archivo_id))
-    archivo.convertido = True
-    db.session.commit()
-    voz = archivo.voz
-    email_to = voz.email
-    nombres = voz.nombres
+    # Actualizar a convertido
+    mongo_db.archivo_voz.update_one(
+        {"_id": ObjectId(archivo_id)},
+        {"$set": {
+            "convertido": True
+        }}
+    )
+    voz = mongo_db.voz.find_one({"archivo_id": archivo_id})
+    email_to = voz["email"]
+    nombres = voz["nombres"]
     full_url = 'http://{}/{}'.format(ip_front, voz.concurso.url)
     enviar_email(email_from, email_to, password, nombres, full_url)
-
 
 def enviar_email(email_from, email_to, password, nombres, full_url):
     print('email')

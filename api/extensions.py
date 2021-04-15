@@ -1,8 +1,11 @@
-#from flask_sqlalchemy import SQLAlchemy
-#from flask_marshmallow import Marshmallow
 from flask import has_app_context
 from celery import Celery
-
+import os
+# mongo
+import pymongo
+# dotenv
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 
 class FlaskCelery(Celery):
 
@@ -34,8 +37,8 @@ class FlaskCelery(Celery):
         self.app = app
         self.config_from_object(app.config)
 
-
 celery = FlaskCelery()
-#db = SQLAlchemy()
-#ma = Marshmallow()
-
+# Mongo Client
+uri = os.environ.get('DATABASE_URI')
+client = pymongo.MongoClient(uri)
+mongo_db = client.cloud
