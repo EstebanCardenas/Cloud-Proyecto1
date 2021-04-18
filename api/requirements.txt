@@ -4,10 +4,13 @@ flask
 flask-cors
 flask-sqlalchemy
 flask-marshmallow
-flask-praetorian
+flask_jwt_extended
 marshmallow-sqlalchemy
 Werkzeug
 psycopg2-binary
+pymongo[srv,aws]
+bson
+python-dotenv
 
 #tasks
 celery
@@ -16,6 +19,3 @@ redis
 #deploy
 gunicorn
 wheel
-
-#mongo
-pymongo

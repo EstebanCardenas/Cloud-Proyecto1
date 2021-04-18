@@ -3,6 +3,7 @@ import Grid from '@material-ui/core/Grid';
 import Entrada from './Entrada';
 import Pagination from '@material-ui/lab/Pagination';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { Container } from '@material-ui/core';
 
 export default function ConcursoDetail({match}) {
     //state
@@ -21,42 +22,42 @@ export default function ConcursoDetail({match}) {
             }
             const idx = match.url.search(/concurso/) + 9
             const concurso_id = match.url.slice(idx)
-            let url = `/api/concursos/${concurso_id}/voces?page=${page}`
-            let resp = await fetch(url, {
+            const url_voces = `/api/concursos/${concurso_id}/voces?page=${page}`
+            const resp_voces = await fetch(url_voces, {
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
             })
-            let status = resp["status"]
-            if (status !== 200) {
-                if (status === 403)
+            const status_voces = resp_voces["status"]
+            if (status_voces !== 200) {
+                if (status_voces === 403)
                     alert("Debes ser el dueño del concurso para ver las voces")
                 else
                     alert("No se pudieron obtener las voces")
                 return
             }
-            let json = await resp.json()
-            setPages(json["total_pags"])
-            let voces = json["voces"]
+            const json_voces = await resp_voces.json()
+            setPages(json_voces["total_pags"])
+            const voces = json_voces["voces"]
             for (let i=0; i<voces.length; i++) {
                 const voz = voces[i]
                 //archivo convertido
-                let url = `/api/audio/${voz.archivo_id}?convertido=1`
-                let respConv = await fetch(url)
-                let statusConv = resp["status"]
-                if (statusConv === 400) {
+                const url_conv = `/api/audio/${voz.archivo_id}?convertido=1`
+                const resp_conv = await fetch(url_conv)
+                const status_conv = resp_conv["status"]
+                if (status_conv === 400) {
                     voces[i]["estado"] = "En proceso"
-                } else if (statusConv === 200) {
-                    const blob = await respConv.blob()
+                } else if (status_conv === 200) {
+                    const blob = await resp_conv.blob()
                     voces[i]["convertida"] = blob
                     voces[i]["estado"] = "Convertida"
                 }
                 //archivo sin convertir
-                url = `/api/audio/${voz.archivo_id}?convertido=0`
-                let respOr = await fetch(url)
-                let statusOr = resp["status"]
-                if (statusOr === 200) {
-                    const blob = await respOr.blob()
+                const url_noconv = `/api/audio/${voz.archivo_id}?convertido=0`
+                const resp_noconv = await fetch(url_noconv)
+                const status_noconv = resp_noconv["status"]
+                if (status_noconv === 200) {
+                    const blob = await resp_noconv.blob()
                     voces[i]["original"] = blob
                 }
             }
@@ -69,7 +70,7 @@ export default function ConcursoDetail({match}) {
     function renderVoces() {
         if (voces.length && fetched) {
             return (
-                <div>
+                <div style={{margin: "2rem"}}>
                     <Grid container spacing={3}>
                         {voces.map((voz,idx) => {
                             return (

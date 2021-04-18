@@ -28,8 +28,8 @@ def convertir_a_mp3(archivo_id, path_origen, path_destino):
     enviar_email(email_from, email_to, password, nombres, full_url)
 
 def enviar_email(email_from, email_to, password, nombres, full_url):
-    print('email')
-    print(email_from,email_to)
+    #print('email')
+    #print(email_from, email_to)
     content = '''Hola {},
 
 Te informamos que hemos procesado tu voz y ahora puede ser encontrada en la pagina principal del concurso:

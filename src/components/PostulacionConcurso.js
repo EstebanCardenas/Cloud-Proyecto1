@@ -73,7 +73,7 @@ export default function Register(props) {
             nombres:nombres,
             apellidos:apellidos,
             observaciones:observaciones,
-            archivo_id:body.id,
+            archivo_id:body._id,
             concurso_id:props.concursoId,
         }
         console.log(data2)
@@ -84,7 +84,7 @@ export default function Register(props) {
 
         if (response2["status"] !== 201) {
             alert("No se pudo completar la postulación")
-	    props.setOpen(false)
+	        props.setOpen(false)
             return
         }
         const body2 = await response2.json()

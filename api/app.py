@@ -1,5 +1,6 @@
 import random, string
-from datetime import datetime
+import math as mt
+from datetime import datetime, timedelta
 import os
 from flask import Flask, request, jsonify, json, send_file
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity, JWTManager
@@ -21,8 +22,7 @@ ALLOWED_EXTENSIONS = {'wav', 'mp3', 'aac', 'm4a', 'ogg'}
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'top secret'
-app.config['JWT_ACCESS_LIFESPAN'] = {'hours': 24}
-app.config['JWT_REFRESH_LIFESPAN'] = {'days': 30}
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 app.config['UPLOAD_FOLDER'] = './originales/'
 app.config['CONVERT_FOLDER'] = './convertidos/'
 app.config['BROKER_URL'] = os.environ.get('BROKER_URL')
@@ -37,7 +37,7 @@ def random_string(num_chars):
 
 def generate_url():
     url = random_string(10)
-    while mongo_db.concurso.find_one({"url":url}) != None:
+    while mongo_db.concurso.find_one({"url":url}):
         url = random_string(10)
     return url
 
@@ -57,12 +57,12 @@ def login():
     email = req.get('email', None)
     password = req.get('password', None)
     if not email or not password:
-        return jsonify({"message": "Missing email parameter"}), 400
-
+        return jsonify({"msg": "Missing parameters"}), 400
     user = mongo_db.user_admin.find_one({"email": email})
     if user == None:
         return jsonify({"msg": "User not Found"}), 404
     if password == user["contrasena"]:
+        user["_id"] = str(user["_id"])
         access_token = create_access_token(identity=user)
         return jsonify({'access_token': access_token}), 200
     else:
@@ -78,7 +78,7 @@ def register():
     if not email or not password or not nombres or not apellidos:
         return jsonify({"msg": "Formulario incompleto"}), 400
     coll = mongo_db.user_admin
-    if coll.find_one({"email": email}) != None:
+    if not coll.find_one({"email": email}):
         coll.insert_one({
             "email": email,
             "contrasena": password,
@@ -90,12 +90,16 @@ def register():
         return {"msg": "El email ya esta registrado"}, 400
 
 @app.route('/api/concursos', methods=['GET','POST'])
-@jwt_required
+@jwt_required()
 def concursos():
     user = get_jwt_identity()
     if request.method == 'GET':
-        u_concursos = mongo_db.concurso.find({"user_id": str(user["_id"])})
+        u_concursos = mongo_db.concurso.find({"user_id": user["_id"]})
         u_concursos = list(u_concursos)
+        for c in u_concursos:
+            c["_id"] = str(c["_id"])
+            c["f_inicio"] = str(c["f_inicio"]).replace(" ", "T")
+            c["f_fin"] = str(c["f_fin"]).replace(" ", "T")
         return jsonify(u_concursos), 200
     elif request.method == 'POST':
         req = json.loads(request.data)
@@ -132,22 +136,27 @@ def concursos():
             "image_base64": imagen,
             "url": url,
             "recomendaciones": recomendaciones,
-            "user_id": str(user["_id"])
+            "user_id": user["_id"]
         }
         mongo_db.concurso.insert_one(concurso)
+        concurso["_id"] = str(concurso["_id"])
         return jsonify(concurso), 201
 
 @app.route('/api/concursos/<string:concurso_id>', methods=['GET','PUT','DELETE'])
-@jwt_required
+@jwt_required()
 def concurso(concurso_id):
     user = get_jwt_identity()
     concurso_coll = mongo_db.concurso
-    concurso = concurso_coll.find_one({"_id": ObjectId(concurso_id)})
-    if concurso == None:
+    try:
+        concurso = concurso_coll.find_one({"_id": ObjectId(concurso_id)})
+    except Exception as e:
+        return {"msg": str(e)}, 403
+    if not concurso:
         return {"msg": "No se encontró un concurso"}, 404
-    if str(user["_id"]) != concurso["user_id"]:
-        return {"msg":"Solo se pueden acceder a concursos propios"}, 403
+    if user["_id"] != concurso["user_id"]:
+        return {"msg": "Solo se pueden acceder a concursos propios"}, 403
     if request.method == 'GET':
+        concurso["_id"] = str(concurso["_id"])
         return concurso, 200
     elif request.method == 'PUT':
         req = json.loads(request.data)
@@ -169,20 +178,24 @@ def concurso(concurso_id):
         if valor_paga:
             changes["valor_paga"] = valor_paga
         if guion:
-            concurso["guion"] = guion
+            changes["guion"] = guion
         if recomendaciones:
-            concurso["recomendaciones"] = recomendaciones
+            changes["recomendaciones"] = recomendaciones
         if imagen:
-            concurso["imagen_base64"] = imagen
+            changes["imagen_base64"] = imagen
         if url:
             if concurso_coll.find_one({"url":url}) != None:
-                return jsonify({"msg":"la url ya esta en uso"}), 400
+                return jsonify({"msg": "La url ya esta en uso"}), 400
             else:
-                concurso["url"] = url
+                changes["url"] = url
+
+        if len(changes.items()) == 0:
+            return jsonify({"msg": "No hay cambios para hacer"})
         concurso_coll.update_one(
             {"_id": ObjectId(concurso_id)},
             {"$set": changes}
         )
+        concurso["_id"] = str(concurso["_id"])
         return concurso, 200
     else:
         concurso_coll.delete_one({"_id": ObjectId(concurso_id)})
@@ -196,6 +209,7 @@ def concursoUrl(concurso_url):
         return jsonify({"msg": "No existe ningun concurso activo con la url especificada"}), 404
     if concurso["f_fin"] <= now:
         return jsonify({"msg": "El concurso ya terminó"}), 404
+    concurso["_id"] = str(concurso["_id"])
     return concurso, 200
 
 @app.route('/api/audio', methods=['POST'])
@@ -213,36 +227,44 @@ def subir_audio():
             "archivo_convertido": None,
             "convertido": False
         }
+        archivo_id = mongo_db.archivo_voz.insert_one(archivo_voz).inserted_id
         try:
-            upload_directory = os.path.join(app.config['UPLOAD_FOLDER'],'{}/'.format(archivo_voz.id))
-            convert_directory = os.path.join(app.config['CONVERT_FOLDER'],'{}/'.format(archivo_voz.id))
+            upload_directory = os.path.join(app.config['UPLOAD_FOLDER'], '{}/'.format(archivo_id))
+            convert_directory = os.path.join(app.config['CONVERT_FOLDER'], '{}/'.format(archivo_id))
             os.makedirs(upload_directory, exist_ok=True)
             os.makedirs(convert_directory, exist_ok=True)
-            path = os.path.join(upload_directory,filename)
-            convert_path = os.path.join(convert_directory,'{}.mp3'.format(os.path.splitext(filename)[0]))
+            path = os.path.join(upload_directory, filename)
+            convert_path = os.path.join(convert_directory, '{}.mp3'.format(os.path.splitext(filename)[0]))
+            file.save(path)
+
+            # update
             archivo_voz["archivo_original"] = path
             archivo_voz["archivo_convertido"] = convert_path
-            file.save(path)
-            archivo_id = mongo_db.archivo.insert_one(archivo_voz).inserted_id
+            changes = {
+                "archivo_original": path,
+                "archivo_convertido": convert_path
+            }
+            mongo_db.archivo_voz.update_one(
+                {"_id": archivo_id},
+                {"$set": changes}
+            )
             archivo_voz["_id"] = str(archivo_id)
             return jsonify(archivo_voz), 201
         except:
             traceback.print_exc()
             return jsonify({"msg": "Error guardando el archivo"}), 500
 
-    return jsonify({"msg":"Formato de archivo no soportado"}), 400
+    return jsonify({"msg": "Formato de archivo no soportado"}), 400
 
-@app.route('/api/audio/<int:audio_id>', methods=['GET'])
+@app.route('/api/audio/<string:audio_id>', methods=['GET'])
 def descargar_audio(audio_id):
-    #ArchivoVoz.query.get_or_404(audio_id)
     archivo = mongo_db.archivo_voz.find_one({"_id": ObjectId(audio_id)})
-    if archivo == None:
+    if not archivo:
         return {"msg": "Archivo no encontrado"}, 404
     convertido = request.args.get('convertido') == '1'
     if convertido and not archivo["convertido"]:
         return jsonify({"msg": "El archivo de voz no se ha convertido"}), 400
     return send_file(archivo["archivo_convertido"] if convertido else archivo["archivo_original"]), 200
-    #return send_file(archivo.archivo_original),200
 
 @app.route('/api/voz', methods=['POST'])
 def subir_voz():
@@ -257,7 +279,6 @@ def subir_voz():
 
     if not mongo_db.concurso.find_one({"_id": ObjectId(concurso_id)}):
         return {"msg": "Concurso no encontrado"}, 404
-    # ArchivoVoz.query.get_or_404(archivo_id)
     archivo = mongo_db.archivo_voz.find_one({"_id": ObjectId(archivo_id)})
     if not archivo["archivo_original"]:
         return jsonify({"msg": "Archivo de audio no existente"}),404
@@ -269,53 +290,55 @@ def subir_voz():
         "apellidos": apellidos,
         "observaciones": observaciones,
         "archivo_id": archivo_id,
-        "cocnurso_id": concurso_id
+        "concurso_id": concurso_id
     }
-    voz["_id"] = mongo_db.voz.insert_one(voz).inserted_id
+    voz["_id"] = str(mongo_db.voz.insert_one(voz).inserted_id)
     convertir_a_mp3.delay(str(archivo["_id"]), archivo["archivo_original"], archivo["archivo_convertido"])
     return jsonify(voz), 201
 
-@app.route('/api/concursos/<int:concurso_id>/voces', methods=['GET'])
-@jwt_required
+@app.route('/api/concursos/<string:concurso_id>/voces', methods=['GET'])
+@jwt_required()
 def voces_concurso(concurso_id):
     concurso = mongo_db.concurso.find_one({"_id": ObjectId(concurso_id)})
     if not concurso:
         return {"msg": "Concurso no encontrado"}, 404
     user = get_jwt_identity()
-    if str(user["_id"]) != concurso["user_id"]:
-        return jsonify({"msg": "Debe ser el dueño del concurso para ver las voces"}),403
+    if user["_id"] != concurso["user_id"]:
+        return jsonify({"msg": "Debe ser el dueño del concurso para ver las voces"}), 403
     page = request.args.get('page')
     page = int(page) if page else 1
     skipped = (page-1)*50
-    voces_pag = mongo_db.voz.find({"concurso_id": concurso_id})\
+    voces = mongo_db.voz.find({"concurso_id": concurso_id})\
         .sort("f_creacion", pymongo.DESCENDING)\
         .skip(skipped)\
         .limit(50)
-    voces = list(voces_pag)
-    num_pags = len(voces)
+    voces = list(voces)
+    for v in voces: v["_id"] = str(v["_id"])
+    num_pags = mt.ceil(len(voces)/50)
     return jsonify({"voces": voces, "total_pags": num_pags}), 200
 
 @app.route('/api/url/<string:concurso_url>/voces', methods=['GET'])
 def voces_concurso_activo(concurso_url):
     now = datetime.now()
-    #Concurso.query.filter_by(url=concurso_url).filter(Concurso.f_fin > now).first()
     concurso = mongo_db.concurso.find_one({"url": concurso_url})
     if concurso:
-        if not concurso["f_fin"] > now:
+        if concurso["f_fin"] <= now:
             concurso = None
     if not concurso:
-        return jsonify({"msg":"No existe ningun concurso activo con la url especificada"}), 404
+        return jsonify({"msg": "No existe ningun concurso activo con la url especificada"}), 404
     page = request.args.get('page')
     page = int(page) if page else 1
-    skipped = (page-1)*50
-    #Voz.query.filter_by(concurso_id=concurso.id).filter(Voz.archivo_voz.has(convertido=True)). \
-    #    order_by(Voz.f_creacion.desc()).paginate(page=page, per_page=50)
-    voces = mongo_db.voz.find({"concurso_id": str(concurso["_id"]), "convertido": True})\
-        .sort("f_creacion", pymongo.DESCENDING)\
-        .skip(skipped)\
-        .limit(50)
-    voces = list(voces)
-    num_pags = len(voces)
+    voces = list(mongo_db.voz.find({"concurso_id": str(concurso["_id"])}))
+    def filt_func(voz):
+        print(voz)
+        archivo = mongo_db.archivo_voz.find_one({"_id": ObjectId(voz["archivo_id"])})
+        return archivo["convertido"]
+    voces = list(filter(filt_func, voces))
+    voces.sort(key=lambda el: el["f_creacion"], reverse=True)
+    for v in voces: v["_id"] = str(v["_id"])
+    idx = (page-1)*50
+    voces = voces[idx:idx+50]
+    num_pags = mt.ceil(len(voces)/50)
     return jsonify({"voces": voces, "total_pags": num_pags}), 200
 
 if __name__ == '__main__':

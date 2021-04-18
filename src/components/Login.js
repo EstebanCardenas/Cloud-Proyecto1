@@ -3,7 +3,6 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import Link from '@material-ui/core/Link';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
@@ -52,16 +51,18 @@ export default function Login(props) {
         })
         .then(resp => resp.json())
         .then(json => {
-            if (json["status_code"] == 401) {
-                alert("Login fallido: El correo o la contraseña son incorrectos")
+            if (json["access_token"]) {
+                localStorage.setItem("mail", mail)
+                localStorage.setItem("access_token", json["access_token"])
+                props.setLogged(true)
+                alert("Login exitoso!")
+                props.setOpen(false)
+                window.location.reload()
+            }
+            else {
+                alert(`Error: ${json["msg"]}`)
                 return
             }
-            localStorage.setItem("mail", mail)
-            localStorage.setItem("access_token", json["access_token"])
-            props.setLogged(true)
-            alert("Login exitoso!")
-            props.setOpen(false)
-            window.location.reload()
         })
         .catch(err => {
             console.log(err)

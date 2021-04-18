@@ -9,16 +9,11 @@ import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
-import Container from '@material-ui/core/Container';
-import Grid from '@material-ui/core/Grid';
 import Pagination from '@material-ui/lab/Pagination';
 import PostulacionConcurso from './PostulacionConcurso';
 import ReactAudioPlayer from 'react-audio-player';
-import ReactHowlerPlayer from 'react-howler-player';
 import CircularProgress from '@material-ui/core/CircularProgress';
-
 import Button from '@material-ui/core/Button';
-import { CssBaseline } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
     icon: {
@@ -154,7 +149,7 @@ export default function HomeConcurso({ match }) {
             let json = await resp.json()
             setConcurso(json)
             console.log(json)
-            setConcursoId(json.id)
+            setConcursoId(json._id)
             setImageBase64(json.imagen_base64)
             //setImageBase64(window.atob(json.image_base64))
             //console.log(window.atob(json.image_base64))
@@ -368,7 +363,7 @@ export default function HomeConcurso({ match }) {
                         closeAfterTransition
                         BackdropComponent={Backdrop}
                         BackdropProps={{
-                        timeout: 500,
+                            timeout: 500,
                         }}
                     >
                         <Fade in={openPostulacion}>

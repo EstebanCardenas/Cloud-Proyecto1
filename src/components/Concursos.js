@@ -187,7 +187,7 @@ export default function Concursos() {
                 let newArr = [...concursos]
                 const newUrl = evtURLConcurso !== "" ? evtURLConcurso : json["url"]
                 newArr.unshift({
-                    id: json["id"],
+                    id: json["_id"],
                     nombre: evtNombre,
                     url: newUrl,
                     imagen: evtImagen,
@@ -389,7 +389,7 @@ export default function Concursos() {
                         concursos={concursos}
                         setConcursos={setConcursos}
                         ind={idx}
-                        evtId={evt.id}
+                        evtId={evt._id}
 
                         nombre={evt.nombre}
                         url={evt.url}
