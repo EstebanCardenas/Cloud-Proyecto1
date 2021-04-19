@@ -16,6 +16,9 @@ import traceback
 import pymongo
 # dotenv
 from dotenv import load_dotenv, find_dotenv
+#aws
+import boto3
+
 load_dotenv(find_dotenv())
 
 ALLOWED_EXTENSIONS = {'wav', 'mp3', 'aac', 'm4a', 'ogg'}
@@ -26,6 +29,7 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 app.config['UPLOAD_FOLDER'] = './originales/'
 app.config['CONVERT_FOLDER'] = './convertidos/'
 app.config['BROKER_URL'] = os.environ.get('BROKER_URL')
+bucket = os.environ['BUCKET_NAME']
 
 CORS(app)
 jwt = JWTManager(app)
@@ -229,20 +233,12 @@ def subir_audio():
         }
         archivo_id = mongo_db.archivo_voz.insert_one(archivo_voz).inserted_id
         try:
-            upload_directory = os.path.join(app.config['UPLOAD_FOLDER'], '{}/'.format(archivo_id))
-            convert_directory = os.path.join(app.config['CONVERT_FOLDER'], '{}/'.format(archivo_id))
-            os.makedirs(upload_directory, exist_ok=True)
-            os.makedirs(convert_directory, exist_ok=True)
-            path = os.path.join(upload_directory, filename)
-            convert_path = os.path.join(convert_directory, '{}.mp3'.format(os.path.splitext(filename)[0]))
-            file.save(path)
-
             # update
-            archivo_voz["archivo_original"] = path
-            archivo_voz["archivo_convertido"] = convert_path
+            archivo_voz["archivo_original"] = '{}.{}'.format(str(archivo_id), ext)
+            archivo_voz["archivo_convertido"] = '{}.mp3'.format(str(archivo_id))
             changes = {
-                "archivo_original": path,
-                "archivo_convertido": convert_path
+                "archivo_original": '{}.{}'.format(str(archivo_id), ext),
+                "archivo_convertido": '{}.mp3'.format(str(archivo_id))
             }
             mongo_db.archivo_voz.update_one(
                 {"_id": archivo_id},
@@ -264,7 +260,13 @@ def descargar_audio(audio_id):
     convertido = request.args.get('convertido') == '1'
     if convertido and not archivo["convertido"]:
         return jsonify({"msg": "El archivo de voz no se ha convertido"}), 400
-    return send_file(archivo["archivo_convertido"] if convertido else archivo["archivo_original"]), 200
+    object_name = archivo["archivo_original"]
+    if convertido:
+        object_name = archivo["archivo_convertido"]
+    # Enviar archivo desde S3
+    s3 = boto3.client('s3')
+    file = s3.get_object(Bucket=bucket Key=object_name)
+    return send_file(file['Body'].read()), 200
 
 @app.route('/api/voz', methods=['POST'])
 def subir_voz():

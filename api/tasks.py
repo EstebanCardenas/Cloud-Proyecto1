@@ -5,15 +5,32 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
+import boto3
+import logging
 
 email_from = os.environ['ADMIN_EMAIL']
 password = os.environ['ADMIN_PASSWORD']
 ip_front = os.environ['IP_FRONT']
+bucket = os.environ['BUCKET_NAME']
+
 
 @celery.task
-def convertir_a_mp3(archivo_id, path_origen, path_destino):
-    proc = subprocess.Popen(['ffmpeg', '-nostdin', '-y', '-i', path_origen, path_destino])
+def convertir_a_mp3(archivo_id, objeto_origen, objeto_destino):
+    s3 = boto3.client('s3')
+    s3.download_file(bucket, objeto_origen, objeto_origen)
+    proc = subprocess.Popen(['ffmpeg', '-nostdin', '-y', '-i', objeto_origen, objeto_destino])
     proc.wait()
+    # Subir convertido a S3
+    try:
+        response = s3.upload_file(objeto_destino, bucket, objeto_destino)
+    except ClientError as e:
+        logging.error(e)
+        raise e
+    # Eliminar archivos
+    if os.path.exists(objeto_origen):
+        os.remove(objeto_origen)
+    if os.path.exists(objeto_destino):
+        os.remove(objeto_destino)
     # Actualizar a convertido
     mongo_db.archivo_voz.update_one(
         {"_id": ObjectId(archivo_id)},
