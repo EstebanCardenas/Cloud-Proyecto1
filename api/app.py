@@ -24,7 +24,7 @@ load_dotenv(find_dotenv())
 ALLOWED_EXTENSIONS = {'wav', 'mp3', 'aac', 'm4a', 'ogg'}
 
 app = Flask(__name__)
-app.config['JWT_SECRET_KEY'] = 'top secret'
+app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 app.config['UPLOAD_FOLDER'] = './originales/'
 app.config['CONVERT_FOLDER'] = './convertidos/'
