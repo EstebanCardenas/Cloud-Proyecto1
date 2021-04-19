@@ -28,7 +28,6 @@ app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 app.config['UPLOAD_FOLDER'] = './originales/'
 app.config['CONVERT_FOLDER'] = './convertidos/'
-app.config['BROKER_URL'] = os.environ.get('BROKER_URL')
 bucket = os.environ['BUCKET_NAME']
 queue_url = os.environ['QUEUE_URL']
 
