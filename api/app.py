@@ -30,6 +30,7 @@ app.config['UPLOAD_FOLDER'] = './originales/'
 app.config['CONVERT_FOLDER'] = './convertidos/'
 app.config['BROKER_URL'] = os.environ.get('BROKER_URL')
 bucket = os.environ['BUCKET_NAME']
+queue_url = os.environ['QUEUE_URL']
 
 CORS(app)
 jwt = JWTManager(app)
@@ -295,7 +296,10 @@ def subir_voz():
         "concurso_id": concurso_id
     }
     voz["_id"] = str(mongo_db.voz.insert_one(voz).inserted_id)
-    convertir_a_mp3.delay(str(archivo["_id"]), archivo["archivo_original"], archivo["archivo_convertido"])
+    sqs = boto3.client('sqs')
+    msg = '{{id: "{}", original: "{}", convertido: "{}"}}'.format(str(archivo["_id"]), 
+        archivo["archivo_original"], archivo["archivo_convertido"])
+    sqs.send_message(QueueUrl=queue_url, MessageBody=msg)
     return jsonify(voz), 201
 
 @app.route('/api/concursos/<string:concurso_id>/voces', methods=['GET'])
