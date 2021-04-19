@@ -265,7 +265,7 @@ def descargar_audio(audio_id):
         object_name = archivo["archivo_convertido"]
     # Enviar archivo desde S3
     s3 = boto3.client('s3')
-    file = s3.get_object(Bucket=bucket Key=object_name)
+    file = s3.get_object(Bucket=bucket, Key=object_name)
     return send_file(file['Body'].read()), 200
 
 @app.route('/api/voz', methods=['POST'])
