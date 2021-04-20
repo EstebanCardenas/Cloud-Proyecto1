@@ -9,7 +9,6 @@ from werkzeug.utils import secure_filename
 from bson.objectid import ObjectId
 # celery
 from extensions import celery, mongo_db
-from tasks import convertir_a_mp3
 from datetime import datetime
 import traceback
 # mongo
@@ -18,6 +17,7 @@ import pymongo
 from dotenv import load_dotenv, find_dotenv
 #aws
 import boto3
+from botocore.exceptions import ClientError
 
 load_dotenv(find_dotenv())
 
@@ -240,6 +240,12 @@ def subir_audio():
                 "archivo_original": '{}.{}'.format(str(archivo_id), ext),
                 "archivo_convertido": '{}.mp3'.format(str(archivo_id))
             }
+            s3_client = boto3.client('s3')
+            try:
+                response = s3_client.upload_fileobj(file, bucket, archivo_voz["archivo_original"])
+            except ClientError as e:
+                logging.error(e)
+                return jsonify({"msg": "Error subiendo el archivo"}), 500
             mongo_db.archivo_voz.update_one(
                 {"_id": archivo_id},
                 {"$set": changes}

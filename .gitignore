@@ -13,7 +13,7 @@ venv
 /build
 
 # aws
-/.aws
+.aws/
 
 # misc
 .DS_Store
@@ -27,6 +27,7 @@ api/convertidos
 test.db
 celery.log
 .env
+app.log
 
 npm-debug.log*
 yarn-debug.log*
