@@ -1,4 +1,3 @@
-from extensions import celery
 from app import mongo_db, ObjectId
 import subprocess
 import smtplib
@@ -7,14 +6,17 @@ from email.mime.text import MIMEText
 import os
 import boto3
 import logging
+from time import sleep
+import json
 
-email_from = os.environ['ADMIN_EMAIL']
-password = os.environ['ADMIN_PASSWORD']
-ip_front = os.environ['IP_FRONT']
+email_from = os.environ.get('ADMIN_EMAIL')
+password = os.environ.get('ADMIN_PASSWORD')
+ip_front = os.environ.get('IP_FRONT')
 bucket = os.environ['BUCKET_NAME']
+queue_url = os.environ['QUEUE_URL']
+sqs_client = boto3.client('sqs')
 
 
-@celery.task
 def convertir_a_mp3(archivo_id, objeto_origen, objeto_destino):
     s3 = boto3.client('s3')
     s3.download_file(bucket, objeto_origen, objeto_origen)
@@ -32,17 +34,18 @@ def convertir_a_mp3(archivo_id, objeto_origen, objeto_destino):
     if os.path.exists(objeto_destino):
         os.remove(objeto_destino)
     # Actualizar a convertido
+    voz = mongo_db.voz.find_one({"archivo_id": archivo_id})
+    concurso = mongo_db.concurso.find_one({"_id": ObjectId(voz['concurso_id'])})
     mongo_db.archivo_voz.update_one(
         {"_id": ObjectId(archivo_id)},
         {"$set": {
             "convertido": True
         }}
     )
-    voz = mongo_db.voz.find_one({"archivo_id": archivo_id})
     email_to = voz["email"]
     nombres = voz["nombres"]
-    full_url = 'http://{}/{}'.format(ip_front, voz.concurso.url)
-    enviar_email(email_from, email_to, password, nombres, full_url)
+    full_url = 'http://{}/{}'.format(ip_front, concurso['url'])
+    #enviar_email(email_from, email_to, password, nombres, full_url)
 
 def enviar_email(email_from, email_to, password, nombres, full_url):
     #print('email')
@@ -65,3 +68,21 @@ SuperVoices.'''.format(nombres, full_url)
     text = message.as_string()
     session.sendmail(email_from, email_to, text)
     session.quit()
+
+def main():
+    while True:
+        response = sqs_client.receive_message(QueueUrl=queue_url, WaitTimeSeconds=20)
+        if response.get('Messages'):
+            print(response['Messages'][0]['Body'])
+            print(type(response['Messages'][0]['Body']))
+            dic = json.loads(response['Messages'][0]['Body'])
+            print(dic)
+            print(type(dic))
+            convertir_a_mp3(dic['id'], dic['original'], dic['convertido'])
+            receipt_handle = response['Messages'][0]['ReceiptHandle']
+            sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
+        else:
+            sleep(10)
+
+if __name__ == '__main__':
+    main()
