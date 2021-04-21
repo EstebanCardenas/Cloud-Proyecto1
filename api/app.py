@@ -1,4 +1,5 @@
-import random, string
+import random
+import string
 import math as mt
 from datetime import datetime, timedelta
 import os
@@ -7,6 +8,7 @@ from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identi
 from flask_cors.extension import CORS
 from werkzeug.utils import secure_filename
 from bson.objectid import ObjectId
+import redis
 # celery
 from extensions import celery, mongo_db
 from datetime import datetime
@@ -34,6 +36,9 @@ queue_url = os.environ['QUEUE_URL']
 CORS(app)
 jwt = JWTManager(app)
 celery.init_app(app)
+# redis
+REDIS_URL = os.environ.get('REDIS_URL')
+store = redis.Redis.from_url(REDIS_URL)
 
 def random_string(num_chars):
     characters = string.ascii_letters + string.digits
@@ -97,8 +102,14 @@ def register():
 @jwt_required()
 def concursos():
     user = get_jwt_identity()
+    # Get cached id
+    admin_id = store.get(user['email'])
+    if not admin_id:
+        admin_id = user["_id"]
+        store.set(user['email'], user["_id"])
+
     if request.method == 'GET':
-        u_concursos = mongo_db.concurso.find({"user_id": user["_id"]})
+        u_concursos = mongo_db.concurso.find({"user_id": admin_id})
         u_concursos = list(u_concursos)
         for c in u_concursos:
             c["_id"] = str(c["_id"])
@@ -140,7 +151,7 @@ def concursos():
             "image_base64": imagen,
             "url": url,
             "recomendaciones": recomendaciones,
-            "user_id": user["_id"]
+            "user_id": admin_id
         }
         mongo_db.concurso.insert_one(concurso)
         concurso["_id"] = str(concurso["_id"])
@@ -150,6 +161,12 @@ def concursos():
 @jwt_required()
 def concurso(concurso_id):
     user = get_jwt_identity()
+    # Get cached id
+    admin_id = store.get(user['email'])
+    if not admin_id:
+        admin_id = user["_id"]
+        store.set(user['email'], user["_id"])
+
     concurso_coll = mongo_db.concurso
     try:
         concurso = concurso_coll.find_one({"_id": ObjectId(concurso_id)})
@@ -157,7 +174,7 @@ def concurso(concurso_id):
         return {"msg": str(e)}, 403
     if not concurso:
         return {"msg": "No se encontró un concurso"}, 404
-    if user["_id"] != concurso["user_id"]:
+    if admin_id != concurso["user_id"]:
         return {"msg": "Solo se pueden acceder a concursos propios"}, 403
     if request.method == 'GET':
         concurso["_id"] = str(concurso["_id"])
@@ -313,9 +330,16 @@ def voces_concurso(concurso_id):
     concurso = mongo_db.concurso.find_one({"_id": ObjectId(concurso_id)})
     if not concurso:
         return {"msg": "Concurso no encontrado"}, 404
+    
     user = get_jwt_identity()
-    if user["_id"] != concurso["user_id"]:
+    # Get cached id
+    admin_id = store.get(user['email'])
+    if not admin_id:
+        admin_id = user["_id"]
+        store.set(user['email'], user["_id"])
+    if admin_id != concurso["user_id"]:
         return jsonify({"msg": "Debe ser el dueño del concurso para ver las voces"}), 403
+
     page = request.args.get('page')
     page = int(page) if page else 1
     skipped = (page-1)*50
