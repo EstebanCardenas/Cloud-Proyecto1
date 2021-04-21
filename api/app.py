@@ -302,7 +302,7 @@ def subir_voz():
     }
     voz["_id"] = str(mongo_db.voz.insert_one(voz).inserted_id)
     sqs = boto3.client('sqs')
-    msg = '{{id: "{}", original: "{}", convertido: "{}"}}'.format(str(archivo["_id"]), 
+    msg = '{{"id": "{}", "original": "{}", "convertido": "{}"}}'.format(str(archivo["_id"]), 
         archivo["archivo_original"], archivo["archivo_convertido"])
     sqs.send_message(QueueUrl=queue_url, MessageBody=msg)
     return jsonify(voz), 201
