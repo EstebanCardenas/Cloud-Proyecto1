@@ -330,7 +330,7 @@ def voces_concurso(concurso_id):
     concurso = mongo_db.concurso.find_one({"_id": ObjectId(concurso_id)})
     if not concurso:
         return {"msg": "Concurso no encontrado"}, 404
-    
+
     user = get_jwt_identity()
     # Get cached id
     admin_id = store.get(user['email'])
