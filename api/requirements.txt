@@ -11,6 +11,7 @@ psycopg2-binary
 pymongo[srv,aws]
 bson
 python-dotenv
+boto3
 
 #tasks
 celery

@@ -23,11 +23,7 @@ def convertir_a_mp3(archivo_id, objeto_origen, objeto_destino):
     proc = subprocess.Popen(['ffmpeg', '-nostdin', '-y', '-i', objeto_origen, objeto_destino])
     proc.wait()
     # Subir convertido a S3
-    try:
-        response = s3.upload_file(objeto_destino, bucket, objeto_destino)
-    except ClientError as e:
-        logging.error(e)
-        raise e
+    response = s3.upload_file(objeto_destino, bucket, objeto_destino)
     # Eliminar archivos
     if os.path.exists(objeto_origen):
         os.remove(objeto_origen)
@@ -71,18 +67,22 @@ SuperVoices.'''.format(nombres, full_url)
 
 def main():
     while True:
-        response = sqs_client.receive_message(QueueUrl=queue_url, WaitTimeSeconds=20)
-        if response.get('Messages'):
-            print(response['Messages'][0]['Body'])
-            print(type(response['Messages'][0]['Body']))
-            dic = json.loads(response['Messages'][0]['Body'])
-            print(dic)
-            print(type(dic))
-            convertir_a_mp3(dic['id'], dic['original'], dic['convertido'])
-            receipt_handle = response['Messages'][0]['ReceiptHandle']
-            sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
-        else:
-            sleep(10)
+        try:
+            response = sqs_client.receive_message(QueueUrl=queue_url, WaitTimeSeconds=20)
+            if response.get('Messages'):
+                print(response['Messages'][0]['Body'])
+                print(type(response['Messages'][0]['Body']))
+                dic = json.loads(response['Messages'][0]['Body'])
+                print(dic)
+                print(type(dic))
+                convertir_a_mp3(dic['id'], dic['original'], dic['convertido'])
+                receipt_handle = response['Messages'][0]['ReceiptHandle']
+                sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
+            else:
+                sleep(10)
+        except Exception as e:
+            logging.error(e)
+
 
 if __name__ == '__main__':
     main()
