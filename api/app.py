@@ -107,6 +107,7 @@ def concursos():
     if not admin_id:
         admin_id = user["_id"]
         store.set(user['email'], user["_id"])
+    admin_id = str(admin_id)
 
     if request.method == 'GET':
         u_concursos = mongo_db.concurso.find({"user_id": admin_id})
@@ -166,6 +167,7 @@ def concurso(concurso_id):
     if not admin_id:
         admin_id = user["_id"]
         store.set(user['email'], user["_id"])
+    admin_id = str(admin_id)
 
     concurso_coll = mongo_db.concurso
     try:
@@ -337,6 +339,7 @@ def voces_concurso(concurso_id):
     if not admin_id:
         admin_id = user["_id"]
         store.set(user['email'], user["_id"])
+    admin_id = str(admin_id)
     if admin_id != concurso["user_id"]:
         return jsonify({"msg": "Debe ser el dueño del concurso para ver las voces"}), 403
 
