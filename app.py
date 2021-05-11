@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 from bson.objectid import ObjectId
 import redis
 # celery
-from extensions import celery, mongo_db
+from extensions import mongo_db
 from datetime import datetime
 import traceback
 # mongo
@@ -25,7 +25,7 @@ load_dotenv(find_dotenv())
 
 ALLOWED_EXTENSIONS = {'wav', 'mp3', 'aac', 'm4a', 'ogg'}
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./build', static_url_path='/')
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 app.config['UPLOAD_FOLDER'] = './originales/'
@@ -35,7 +35,6 @@ queue_url = os.environ['QUEUE_URL']
 
 CORS(app)
 jwt = JWTManager(app)
-celery.init_app(app)
 # redis
 REDIS_URL = os.environ.get('REDIS_URL')
 store = redis.Redis.from_url(REDIS_URL)
@@ -55,6 +54,16 @@ def allowed_file(ext):
 
 def extract_ext(filename):
     return filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
+
+
+@app.errorhandler(404)
+def not_found(e):
+    return app.send_static_file('index.html')
+
 
 @app.route('/api')
 def hello_world():
