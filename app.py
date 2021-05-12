@@ -21,7 +21,7 @@ from dotenv import load_dotenv, find_dotenv
 import boto3
 from botocore.exceptions import ClientError
 
-load_dotenv(find_dotenv())
+#load_dotenv(find_dotenv())
 
 ALLOWED_EXTENSIONS = {'wav', 'mp3', 'aac', 'm4a', 'ogg'}
 
