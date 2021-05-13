@@ -8,8 +8,8 @@ flask_jwt_extended
 marshmallow-sqlalchemy
 Werkzeug
 psycopg2-binary
-pymongo[srv,aws]
 bson
+pymongo[srv,aws]
 python-dotenv
 boto3
 
