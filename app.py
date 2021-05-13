@@ -20,7 +20,7 @@ from dotenv import load_dotenv, find_dotenv
 #aws
 import boto3
 from botocore.exceptions import ClientError
-
+from urllib.parse import urlparse
 #load_dotenv(find_dotenv())
 
 ALLOWED_EXTENSIONS = {'wav', 'mp3', 'aac', 'm4a', 'ogg'}
@@ -36,8 +36,10 @@ queue_url = os.environ['QUEUE_URL']
 CORS(app)
 jwt = JWTManager(app)
 # redis
-REDIS_URL = os.environ.get('REDIS_URL')
-store = redis.Redis.from_url(REDIS_URL)
+redis_url = os.environ.get('REDIS_URL')
+redis_url = urlparse(redis_url)
+store = redis.Redis(host=redis_url.hostname, port=redis_url.port, password=redis_url.password, 
+    health_check_interval=30)
 
 def random_string(num_chars):
     characters = string.ascii_letters + string.digits
