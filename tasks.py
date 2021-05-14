@@ -38,7 +38,7 @@ def convertir_a_mp3(archivo_id, objeto_origen, objeto_destino):
     email_to = voz["email"]
     nombres = voz["nombres"]
     full_url = 'http://{}/{}'.format(ip_front, concurso['url'])
-    enviar_email(email_from, email_to, password, nombres, full_url)
+    enviar_email(email_to, password, nombres, full_url)
 
 def enviar_email(email_to, nombres, full_url):
     key = os.environ.get("TRUSTIFI_KEY")
