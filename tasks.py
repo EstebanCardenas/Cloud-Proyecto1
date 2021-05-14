@@ -8,6 +8,7 @@ import boto3
 import logging
 from time import sleep
 import json
+import requests as req
 
 ip_front = os.environ.get('IP_FRONT')
 bucket = os.environ['BUCKET_NAME']
