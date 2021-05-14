@@ -9,13 +9,10 @@ import logging
 from time import sleep
 import json
 
-email_from = os.environ.get('ADMIN_EMAIL')
-password = os.environ.get('ADMIN_PASSWORD')
 ip_front = os.environ.get('IP_FRONT')
 bucket = os.environ['BUCKET_NAME']
 queue_url = os.environ['QUEUE_URL']
 sqs_client = boto3.client('sqs')
-
 
 def convertir_a_mp3(archivo_id, objeto_origen, objeto_destino):
     s3 = boto3.client('s3')
@@ -41,11 +38,11 @@ def convertir_a_mp3(archivo_id, objeto_origen, objeto_destino):
     email_to = voz["email"]
     nombres = voz["nombres"]
     full_url = 'http://{}/{}'.format(ip_front, concurso['url'])
-    #enviar_email(email_from, email_to, password, nombres, full_url)
+    enviar_email(email_from, email_to, password, nombres, full_url)
 
-def enviar_email(email_from, email_to, password, nombres, full_url):
-    #print('email')
-    #print(email_from, email_to)
+def enviar_email(email_to, nombres, full_url):
+    key = os.environ.get("TRUSTIFI_KEY")
+    secret = os.environ.get("TRUSTIFI_SECRET")
     content = '''Hola {},
 
 Te informamos que hemos procesado tu voz y ahora puede ser encontrada en la pagina principal del concurso:
@@ -53,17 +50,22 @@ Te informamos que hemos procesado tu voz y ahora puede ser encontrada en la pagi
 Si tu voz es seleccionada como ganadora del concurso, te contactaremos para darte mas detalles.
 
 SuperVoices.'''.format(nombres, full_url)
-    message = MIMEMultipart()
-    message['From'] = email_from
-    message['To'] = email_to
-    message['Subject'] = 'Se ha procesado tu voz exitosamente.'
-    message.attach(MIMEText(content, 'plain'))
-    session = smtplib.SMTP('smtp.gmail.com', 587)
-    session.starttls()
-    session.login(email_from, password)
-    text = message.as_string()
-    session.sendmail(email_from, email_to, text)
-    session.quit()
+    url = 'https://be.trustifi.com/api/i/v1/email'
+    payload = json.dumps({
+        "title": "Supervoices - Voz Convertida",
+        "html": content,
+        "recipients": [{"email": email_to}]
+    })
+    headers = {
+        'x-trustifi-key': key,
+        'x-trustifi-secret': secret,
+        'Content-Type': 'application/json'
+    }
+    return req.post(
+        url,
+        headers=headers,
+        data=payload
+    )
 
 def main():
     while True:
